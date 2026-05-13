@@ -61,7 +61,7 @@ Once planning is complete, downstream execution is handled by [arsenal-build](ht
 | `planning/FEATURES.md` / `planning/features/*.md` | `anchor-files` (required), `generate-feature-briefs`, `generate-design-briefs` |
 | `docs/UX.md` | `anchor-files` (required for UI projects), `generate-design-briefs` |
 | `docs/DESIGN.md` | `anchor-files` (required for UI projects) |
-| `planning/mockup-briefs/` | User feeds into Claude Design / Stitch / Open Design / v0; outputs land in `docs/mockups/`, consumed by `design-{web,ios}` |
+| `planning/mockup-briefs/` | User feeds into Claude Design / Stitch / Open Design / v0; outputs land in `docs/mockups/`, consumed by `arsenal-build:design` |
 | `planning/MARKET_RESEARCH.md` | `landing` (competitive analysis), `gtm` |
 
 **Recommended handoff point:** after `mockups` writes briefs and the user has generated mockups into `docs/mockups/`, run `arsenal-build:anchor-files` to consolidate planning into the agent reference layer (CLAUDE.md, ARCHITECTURE.md, CONVENTIONS.md, DESIGN_SYSTEM.md, TASKS.md).

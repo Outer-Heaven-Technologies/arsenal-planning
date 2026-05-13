@@ -355,7 +355,7 @@ Lives in arsenal-planning because `market-analysis` depends on it. Equally usefu
 
 **The independence gate is the whole skill.** Before any dispatch, it checks three criteria — disjoint scope, no shared mutations, result-independence — and refuses to fan out if they don't hold. Failing the gate is the success case for dependent work; the skill recommends sequential execution.
 
-**Does NOT compose with code-changing pipelines.** Investigations are read-only by design — investigator subagents have zero write capability. When findings recommend code changes, the SUMMARY's "Next steps" block points the user at the per-task pipelines (`arsenal-build:run-task-{web,ios}` for sequential, one-fix-at-a-time work) or the orchestrators (`arsenal-build:features-{web,ios}` for pattern-spanning work as a TASKS.md phase). The two plugins connect through filesystem and user judgment, not direct invocation.
+**Does NOT compose with code-changing pipelines.** Investigations are read-only by design — investigator subagents have zero write capability. When findings recommend code changes, the SUMMARY's "Next steps" block points the user at the per-task pipelines (`arsenal-build:run-task-{design,feature}` for sequential, one-fix-at-a-time work) or the orchestrators (`arsenal-build:features` for pattern-spanning work as a TASKS.md phase). The two plugins connect through filesystem and user judgment, not direct invocation.
 
 **Locked contracts:**
 - **Count bounds:** N = 1 refuses with suggestion; 2 ≤ N ≤ 5 normal; N ≥ 6 hard-refuses (recommend phase modeling).

@@ -248,7 +248,7 @@ Continue to Step 4.
 - **Invention flags:** call out the original choices ("the brass-on-charcoal palette is original — neither ref used it; chosen to match 'warm, prestigious' in the direction")
 - Uncertainty flags where direction was thin and you made a judgment call
 
-**Downstream handoff note.** After the design is saved (Step 5), the next step before `anchor-files` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `planning/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `docs/mockups/`. `design-{web,ios}` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
+**Downstream handoff note.** After the design is saved (Step 5), the next step before `anchor-files` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `planning/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `docs/mockups/`. `arsenal-build:design` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
 
 ### Step 5 — Save prompt
 

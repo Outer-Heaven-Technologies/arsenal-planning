@@ -188,7 +188,7 @@ If no MVP_SPEC.md exists, skip this step entirely.
 
 ## Spec amendments during build (downstream contract)
 
-During implementation, `run-task-feature-{web,ios}` may amend FEATURES.md / `features/*.md` in-line when build reveals reality the spec missed — a state that wasn't enumerated, an edge case in user flow, an AC threshold that needs adjustment within the same intent, a missing dependency. **Tier 1** amendments are committed alongside the code change with a `Spec amended:` commit note for auditability, and consolidated into a phase-end summary in the PR body by `close-feature-phase-{web,ios}`.
+During implementation, `arsenal-build:run-task-feature` may amend FEATURES.md / `features/*.md` in-line when build reveals reality the spec missed — a state that wasn't enumerated, an edge case in user flow, an AC threshold that needs adjustment within the same intent, a missing dependency. **Tier 1** amendments are committed alongside the code change with a `Spec amended:` commit note for auditability, and consolidated into a phase-end summary in the PR body by `arsenal-build:close-feature-phase`.
 
 **What this means for `features`:** don't over-drill. If a State or alt-path is genuinely uncertain at plan time, leave it out — the implementer can patch it with provenance when reality surfaces it. The Important section is for counter-intuitive boundaries the agent must know; it is NOT a place to preemptively enumerate every state.
 
