@@ -376,38 +376,38 @@ Lives in arsenal-planning because `market-analysis` depends on it. Equally usefu
 ```
 arsenal-planning/
 ├── .claude-plugin/
-│   └── plugin.json              # plugin manifest (name: arsenal-planning)
-├── skills/
-│   ├── market-analysis/
-│   │   ├── SKILL.md
+│   └── plugin.json                       # plugin manifest (name: arsenal-planning)
+├── skills/                               # folder names are numbered by pipeline order; frontmatter `name:` is the bare skill slug
+│   ├── 01-market-analysis/
+│   │   ├── SKILL.md                      # name: market-analysis
 │   │   └── references/research-dispatch.md
-│   ├── mvp/SKILL.md
-│   ├── features/SKILL.md
-│   ├── ux-web/
-│   │   ├── SKILL.md
+│   ├── 02-mvp/SKILL.md                   # name: mvp
+│   ├── 03-features/SKILL.md              # name: features
+│   ├── 04a-ux-web/                       # 04a–04c are surface alternatives at step 4
+│   │   ├── SKILL.md                      # name: ux-web
 │   │   └── references/skeletons.md
-│   ├── ux-app/
-│   │   ├── SKILL.md
+│   ├── 04b-ux-app/
+│   │   ├── SKILL.md                      # name: ux-app
 │   │   └── references/app-patterns.md
-│   ├── ux-ios/
-│   │   ├── SKILL.md
+│   ├── 04c-ux-ios/
+│   │   ├── SKILL.md                      # name: ux-ios
 │   │   └── references/ios-patterns.md
-│   ├── design/
-│   │   ├── SKILL.md
+│   ├── 05-design/
+│   │   ├── SKILL.md                      # name: design
 │   │   └── references/{template,example-claude,...}.md
-│   ├── mockups/
-│   │   ├── SKILL.md
+│   ├── 06-mockups/
+│   │   ├── SKILL.md                      # name: mockups
 │   │   └── references/worked-examples.md
-│   ├── gtm/SKILL.md
-│   └── dispatch-parallel/
-│       ├── SKILL.md
+│   ├── 07-gtm/SKILL.md                   # name: gtm
+│   └── dispatch-parallel/                # off-pipeline utility (no number prefix)
+│       ├── SKILL.md                      # name: dispatch-parallel
 │       └── references/investigator-prompt.md
 ├── PIPELINE.md
 ├── LICENSE
 └── README.md
 ```
 
-`SKILL.md` is the contract — frontmatter (`name`, `description`) plus body. Claude reads `description` to decide when to auto-invoke; the body is what actually runs.
+`SKILL.md` is the contract — frontmatter (`name`, `description`) plus body. Claude reads `description` to decide when to auto-invoke; the body is what actually runs. **Folder names carry numeric prefixes (`01-`, `02-`, `04a-`) only for human readability — pipeline skills are numbered by execution order, utility skills (`dispatch-parallel`) sit unnumbered. Claude Code uses the frontmatter `name:` to register the skill, so slash commands stay clean (e.g. `/arsenal-planning:mvp`, not `/arsenal-planning:02-mvp`).**
 
 ## Philosophy
 
