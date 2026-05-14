@@ -19,7 +19,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
@@ -88,7 +88,7 @@ Parse the user's request to decide between catalog (Path A), fresh extract (Path
 
 ### Step 3a — Catalog path (getdesign.md source → Google DESIGN.md output)
 
-The getdesign.md catalog (`getdesign` npm package, raw templates on unpkg) is the authoritative source for known brands. Catalog files are in **VoltAgent's 9-section format** (MIT, © VoltAgent). Path A fetches the source, then **transforms** it into Google's 8-section + YAML format so the output integrates with the rest of the pipeline (lint, token references, anchor-files DESIGN_SYSTEM.md derivation downstream).
+The getdesign.md catalog (`getdesign` npm package, raw templates on unpkg) is the authoritative source for known brands. Catalog files are in **VoltAgent's 9-section format** (MIT, © VoltAgent). Path A fetches the source, then **transforms** it into Google's 8-section + YAML format so the output integrates with the rest of the pipeline (lint, token references, arsenal-build:setup DESIGN_SYSTEM.md derivation downstream).
 
 **Do NOT scrape `getdesign.md/<slug>/design-md` for content.** That page is React-rendered and forces reconstruction. Always fetch the raw `.md` from unpkg. (Static preview pages at `getdesign.md/design-md/<brand>/preview[-dark]` are fine — they're not React-hydrated.)
 
@@ -293,7 +293,7 @@ If `npx @google/design.md@latest` fails to install (network, registry, Node vers
 - **Invention flags:** call out the original choices ("the brass-on-charcoal palette is original — neither ref used it; chosen to match 'warm, prestigious' in the direction")
 - Uncertainty flags where direction was thin and you made a judgment call
 
-**Downstream handoff note.** After the design is saved (Step 5), the next step before `anchor-files` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `.arsenal/strategy/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `.arsenal/design/mockups/`. `arsenal-build:design` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
+**Downstream handoff note.** After the design is saved (Step 5), the next step before `setup` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `.arsenal/strategy/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `.arsenal/design/mockups/`. `arsenal-build:design` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
 
 ### Step 5 — Save prompt
 
@@ -420,7 +420,7 @@ When the user saves, the Step 5 `mv` sweeps preview files along with the DESIGN.
 
 **Don't overstep on the slug.** If a user says "save as my-cool-brand-v2", honor it exactly. The library is theirs to organize.
 
-**Cap invented DESIGN.md (Path C) at ~500 lines.** Long brand specs become unscannable and bloat downstream context — the next skill (anchor-files / DESIGN_SYSTEM.md) will balloon trying to implement them. Sweet spot: 100–400 lines for Path C. Paths A and B are verbatim — length is whatever the source is, never truncate to fit. If a Path C invention genuinely needs more than 500 lines, split into `DESIGN.md` (core tokens + voice) + sibling files (e.g., `MOTION.md`, `COMPONENTS.md`) and cross-link.
+**Cap invented DESIGN.md (Path C) at ~500 lines.** Long brand specs become unscannable and bloat downstream context — the next skill (arsenal-build:setup / DESIGN_SYSTEM.md) will balloon trying to implement them. Sweet spot: 100–400 lines for Path C. Paths A and B are verbatim — length is whatever the source is, never truncate to fit. If a Path C invention genuinely needs more than 500 lines, split into `DESIGN.md` (core tokens + voice) + sibling files (e.g., `MOTION.md`, `COMPONENTS.md`) and cross-link.
 
 ## Anti-patterns
 

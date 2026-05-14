@@ -1,6 +1,6 @@
 ---
 name: mockups
-description: Generates two-pass anchor-strategy mockup briefs from upstream FEATURES, UX, and DESIGN — copy-paste-ready prompts engineered for Claude Design, Stitch, Open Design, or v0. Hard-requires upstream planning (FEATURES, UX, DESIGN) to exist; refuses and routes to the right arsenal-planning skill when artifacts are missing. Briefs save to `.arsenal/strategy/mockup-briefs/` for manual handoff to mockup tools today and future automation via generate-mockups. Use whenever you need mockups before running anchor-files and design-*. Triggers include "generate mockup briefs", "prepare mockups", "draft mockup prompts", "script mockups", "set up mockup generation", "I need mockups", "write mockup prompts".
+description: Generates two-pass anchor-strategy mockup briefs from upstream FEATURES, UX, and DESIGN — copy-paste-ready prompts engineered for Claude Design, Stitch, Open Design, or v0. Hard-requires upstream planning (FEATURES, UX, DESIGN) to exist; refuses and routes to the right arsenal-planning skill when artifacts are missing. Briefs save to `.arsenal/strategy/mockup-briefs/` for manual handoff to mockup tools today and future automation via generate-mockups. Use whenever you need mockups before running arsenal-build:setup and design-*. Triggers include "generate mockup briefs", "prepare mockups", "draft mockup prompts", "script mockups", "set up mockup generation", "I need mockups", "write mockup prompts".
 ---
 
 # Plan Mockups
@@ -15,7 +15,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |

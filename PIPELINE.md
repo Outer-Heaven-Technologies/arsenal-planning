@@ -40,8 +40,8 @@ Which file each skill **reads** (`R`) and **writes** (`W`):
 
 | Skill | Reads | Writes |
 |---|---|---|
-| `market-analysis` | — | `.arsenal/strategy/MARKET_RESEARCH.md` (unified executive dossier — market + customer + industry structure + Porter's all 5 + conditional PESTLE + SWOT + risks + recommendations), `.arsenal/strategy/RESEARCH_PLAN.md` (working artifact, retained as historical record) |
-| `mvp` | `.arsenal/strategy/MARKET_RESEARCH.md` (optional) | `.arsenal/strategy/MVP_SPEC.md` |
+| `market-analysis` | — | `.arsenal/strategy/research/MARKET_RESEARCH.md` (unified executive dossier — market + customer + industry structure + Porter's all 5 + conditional PESTLE + SWOT + risks + recommendations), `.arsenal/strategy/research/RESEARCH_PLAN.md` (working artifact, retained as historical record) |
+| `mvp` | `.arsenal/strategy/research/MARKET_RESEARCH.md` (optional) | `.arsenal/strategy/MVP_SPEC.md` |
 | `features` | `MVP_SPEC.md` (optional) | `.arsenal/FEATURES.md` (single) **or** `.arsenal/features/<slug>.md` + `.arsenal/features/README.md` (split) |
 | `ux-web` / `ux-app` / `ux-ios` | `MVP_SPEC.md`, `ARCHITECTURE.md`, `CLAUDE.md` (all optional) | `.arsenal/design/UX.md` |
 | `design` | — | `.arsenal/design/DESIGN.md` + `~/.claude/design-md-library/<slug>/` |
@@ -57,14 +57,14 @@ Once planning is complete, downstream execution is handled by [arsenal-build](ht
 
 | Planning artifact | Downstream consumer (arsenal-build) |
 |---|---|
-| `.arsenal/strategy/MVP_SPEC.md` | `anchor-files` (optional context), `landing` |
-| `.arsenal/FEATURES.md` / `.arsenal/features/*.md` | `anchor-files` (required), `generate-feature-briefs`, `generate-design-briefs` |
-| `.arsenal/design/UX.md` | `anchor-files` (required for UI projects), `generate-design-briefs` |
-| `.arsenal/design/DESIGN.md` | `anchor-files` (required for UI projects) |
+| `.arsenal/strategy/MVP_SPEC.md` | `setup` (optional context), `landing` |
+| `.arsenal/FEATURES.md` / `.arsenal/features/*.md` | `setup` (required), `generate-feature-briefs`, `generate-design-briefs` |
+| `.arsenal/design/UX.md` | `setup` (required for UI projects), `generate-design-briefs` |
+| `.arsenal/design/DESIGN.md` | `setup` (required for UI projects) |
 | `.arsenal/strategy/mockup-briefs/` | User feeds into Claude Design / Stitch / Open Design / v0; outputs land in `.arsenal/design/mockups/`, consumed by `arsenal-build:design` |
-| `.arsenal/strategy/MARKET_RESEARCH.md` | `landing` (competitive analysis), `gtm` |
+| `.arsenal/strategy/research/MARKET_RESEARCH.md` | `landing` (competitive analysis), `gtm` |
 
-**Recommended handoff point:** after `mockups` writes briefs and the user has generated mockups into `.arsenal/design/mockups/`, run `arsenal-build:anchor-files` to consolidate planning into the agent reference layer (CLAUDE.md, `.arsenal/ARCHITECTURE.md`, `.arsenal/CONVENTIONS.md`, `.arsenal/design/DESIGN_SYSTEM.md`, `.arsenal/TASKS.md`).
+**Recommended handoff point:** after `mockups` writes briefs and the user has generated mockups into `.arsenal/design/mockups/`, run `arsenal-build:setup` to consolidate planning into the agent reference layer (CLAUDE.md, `.arsenal/ARCHITECTURE.md`, `.arsenal/CONVENTIONS.md`, `.arsenal/design/DESIGN_SYSTEM.md`, `.arsenal/TASKS.md`).
 
 If you don't have arsenal-build installed, planning artifacts remain at canonical paths and can be consumed by any equivalent execution system.
 
@@ -94,7 +94,7 @@ Skip stages that don't fit the project:
 | `market-analysis` | Hobby project, client work, idea already validated externally | No SWOT / structural-forces analysis; `mvp` falls back to lightweight inline research |
 | `mvp` | Spec already written; idea well-defined externally | None for the spec, but no go/pivot/kill analysis |
 | `features` | <4 features and they're simple (static pages, basic forms) | Downstream build pipelines fall back to UX-driven task expansion — less concrete |
-| `ux-*` | Non-UI projects (CLI, library, API, infra) | Downstream `anchor-files` skips `DESIGN_SYSTEM.md`; phases become pure feature-domain (no design half) |
+| `ux-*` | Non-UI projects (CLI, library, API, infra) | Downstream `setup` skips `DESIGN_SYSTEM.md`; phases become pure feature-domain (no design half) |
 | `design` | Existing brand spec; no UI; CLI/server-only | No canonical brand reference for the build pipeline |
 | `mockups` | Non-UI projects; mockups already produced manually or imported | Design pipeline runs without concrete visual reference — visual fidelity output is less consistent |
 | `gtm` | Hobby project; no launch goals; internal tool | None |

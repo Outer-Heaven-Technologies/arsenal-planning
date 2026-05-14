@@ -55,15 +55,15 @@ Two ways:
 ## The pipeline
 
 ```
-[market-analysis →] mvp → features → ux-{web,app,ios} → design → mockups → [user generates mockups in .arsenal/design/mockups/] → ──→ arsenal-build:anchor-files → ...
+[market-analysis →] mvp → features → ux-{web,app,ios} → design → mockups → [user generates mockups in .arsenal/design/mockups/] → ──→ arsenal-build:setup → ...
                                                                                                                                           gtm
 ```
 
-> **Research split.** `market-analysis` is an optional upstream skill that produces an executive-grade research dossier (`.arsenal/strategy/MARKET_RESEARCH.md` — market + customer + industry structure + Porter's all 5 forces + conditional PESTLE + SWOT + risks + recommendations). It runs standalone for investor decks, market-entry research, and adjacent-market scouting — or feeds into `mvp` for product validation. `mvp` reads it when present and falls back to lightweight inline research when not.
+> **Research split.** `market-analysis` is an optional upstream skill that produces an executive-grade research dossier (`.arsenal/strategy/research/MARKET_RESEARCH.md` — market + customer + industry structure + Porter's all 5 forces + conditional PESTLE + SWOT + risks + recommendations). It runs standalone for investor decks, market-entry research, and adjacent-market scouting — or feeds into `mvp` for product validation. `mvp` reads it when present and falls back to lightweight inline research when not.
 
 > **Mockup workflow.** `mockups` writes two-pass anchor-strategy briefs to `.arsenal/strategy/mockup-briefs/` — copy-paste-ready prompts engineered for Claude Design, Stitch, Open Design, or v0. The user feeds each brief into their tool, saves outputs to `.arsenal/design/mockups/`. Downstream design execution (in arsenal-build) consumes that directory.
 
-> **Cross-plugin handoff.** Once planning is complete, the natural next step is `arsenal-build:anchor-files` if you have arsenal-build installed (`/plugin install arsenal-build@<repo>`). Otherwise, the artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md` or `features/*.md`, `UX.md`, `DESIGN.md`, `mockup-briefs/`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`) are at canonical paths under `.arsenal/` for any execution system to consume.
+> **Cross-plugin handoff.** Once planning is complete, the natural next step is `arsenal-build:setup` if you have arsenal-build installed (`/plugin install arsenal-build@<repo>`). Otherwise, the artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md` or `features/*.md`, `UX.md`, `DESIGN.md`, `mockup-briefs/`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`) are at canonical paths under `.arsenal/` for any execution system to consume.
 
 `ux-*` is three surface-specific skills — `ux-web` (marketing sites), `ux-app` (authenticated web apps), `ux-ios` (native iOS). All three write to `.arsenal/design/UX.md`.
 
@@ -105,7 +105,7 @@ When the first `arsenal-build:expand-phase` runs, it writes baseline denies to `
 - Out-of-scope `.arsenal/features/<slug>.md` per phase — only the in-scope features for the current phase are readable
 - Out-of-scope `.arsenal/tasks/phase-*/**` — only the current phase's task folder is readable
 
-`close-feature-phase` reverts the per-phase entries at phase end, leaving the broad baseline in place. Strategy stays denied until the user manually unlocks (or invokes `gtm` / `landing` / `anchor-files`, which self-lift the strategy deny temporarily).
+`close-feature-phase` reverts the per-phase entries at phase end, leaving the broad baseline in place. Strategy stays denied until the user manually unlocks (or invokes `gtm` / `landing` / `setup`, which self-lift the strategy deny temporarily).
 
 This means: **once build kicks off, the strategy archive becomes dormant to build agents.** Planning iteration (re-running `mvp`, `features`, `ux-*`, `design`, etc.) requires either pre-build state or manual unlock. Tells the user to remove `.arsenal/`-prefixed entries from `.claude/settings.json` if they need to revisit planning mid-build.
 
@@ -126,7 +126,7 @@ Produces an **executive-grade unified research dossier** that a CEO or decision-
 3. **Deep research dispatch.** 2–5 parallel investigations via `dispatch-parallel` covering market sizing (bottom-up TAM/SAM/SOM), customer JTBD, pricing benchmarks, demand signals, and per-competitor deep analysis. Uses Jina MCP / Firecrawl / WebSearch. Every claim tier-graded (T1–T4) and cited with URL + confidence.
 4. **Industry structure.** Porter's all 5 forces, relevance-weighted by product type (AI products focus on Supplier Power; enterprise SaaS focuses on Buyer Power). Conditional PESTLE for regulated industries (fintech, healthtech, etc.).
 5. **Direction check + SWOT + format decision.** Synthesize highest-signal threads, ask if the user wants to reshape any conclusions, then SWOT into the dossier and pick an output format (Brief / Standard / Comprehensive) with an intent-based recommendation.
-6. **Final dossier.** Writes `.arsenal/strategy/MARKET_RESEARCH.md` with §7 Strategic Implications + Appendix (methodology, tier-graded source list, sizing math, optional per-claim confidence summary).
+6. **Final dossier.** Writes `.arsenal/strategy/research/MARKET_RESEARCH.md` with §7 Strategic Implications + Appendix (methodology, tier-graded source list, sizing math, optional per-claim confidence summary).
 
 **Unified dossier structure:** Exec Summary (SCR — Situation/Complication/Resolution) → §1 Market Overview (bottom-up TAM/SAM/SOM) → §2 Customer Analysis (JTBD per Christensen) → §3 Industry Structure & Competition (landscape + Porter's all 5 forces) → §4 PESTLE (conditional) → §5 SWOT → §6 Risks → §7 Strategic Implications → Appendix.
 
@@ -152,7 +152,7 @@ Appendix is excluded from page count — sources (Appendix B) are the credibilit
 
 ### `mvp` — MVP spec with go/pivot/kill
 
-Drills an idea into a focused **MVP spec** — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads `.arsenal/strategy/MARKET_RESEARCH.md` from `market-analysis` if present; otherwise does lightweight inline research to ground the spec.
+Drills an idea into a focused **MVP spec** — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads `.arsenal/strategy/research/MARKET_RESEARCH.md` from `market-analysis` if present; otherwise does lightweight inline research to ground the spec.
 
 **How it works**
 
@@ -165,14 +165,14 @@ Drills an idea into a focused **MVP spec** — what to build first, why, with su
 4. **Write the spec.** `.arsenal/strategy/MVP_SPEC.md` with Must / Should / Won't feature buckets, user stories, core value loop, success metrics, distribution hypothesis, phased roadmap.
 5. **Review & recommendation.** Go / pivot / kill in conversation, with reasoning grounded in research if present, in intake judgment otherwise (and flagged accordingly).
 
-**Surface-level tech decisions are in scope** — web vs iOS, mobile vs desktop, marketing site vs authenticated webapp — those shape the spec and feed downstream skills. Stack-specific decisions (framework, database, hosting) defer to `arsenal-build:anchor-files`.
+**Surface-level tech decisions are in scope** — web vs iOS, mobile vs desktop, marketing site vs authenticated webapp — those shape the spec and feed downstream skills. Stack-specific decisions (framework, database, hosting) defer to `arsenal-build:setup`.
 
 **How to use it**
 
 - **Slash command:** `/arsenal-planning:mvp`
 - **Or trigger with:** "I have an idea for…", "should I build…", "validate this idea", "is this worth building", "scope out an MVP"
 
-- **Inputs:** `.arsenal/strategy/MARKET_RESEARCH.md` (optional — from `market-analysis`).
+- **Inputs:** `.arsenal/strategy/research/MARKET_RESEARCH.md` (optional — from `market-analysis`).
 - **Outputs (`.arsenal/strategy/`):** `MVP_SPEC.md`.
 
 ---

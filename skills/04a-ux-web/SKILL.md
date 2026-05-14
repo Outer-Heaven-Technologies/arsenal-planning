@@ -24,7 +24,7 @@ Generate a `UX.md` file: the UX backbone of a marketing website, landing page, o
 - `UX.md` = UX — information architecture, conversion flow, section ordering, what goes where and why
 - `DESIGN_SYSTEM.md` = UI — how it looks once you know what it is (tokens, components, motion)
 
-Generate `UX.md` first. `DESIGN_SYSTEM.md` references it — the component list in `DESIGN_SYSTEM.md` should derive from the components named here. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from `anchor-files`, cross-check after generation.
+Generate `UX.md` first. `DESIGN_SYSTEM.md` references it — the component list in `DESIGN_SYSTEM.md` should derive from the components named here. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from `setup`, cross-check after generation.
 
 ## Paths
 
@@ -32,7 +32,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
@@ -152,7 +152,7 @@ project-root/
         └── UX.md
 ```
 
-If no `.arsenal/design/` directory exists, ask the user where to put it. If `anchor-files` has been run, match its directory convention.
+If no `.arsenal/design/` directory exists, ask the user where to put it. If `setup` has been run, match its directory convention.
 
 ## Important guidelines
 
@@ -162,7 +162,7 @@ If no `.arsenal/design/` directory exists, ask the user where to put it. If `anc
 - **Components are the bridge to DESIGN_SYSTEM.md.** Every component named here should eventually be defined there. Use names specific enough to design against ("pricing comparison table" not "table").
 - **Anti-patterns are the highest-signal part.** Industry-specific "don't do this" guidance prevents expensive mistakes. Include at least 3-5 per high-stakes page.
 - **Conversion sequence beats aesthetic preference.** The reason hero → proof → benefits → objections → CTA works isn't theory — it's user psychology (loss aversion, social validation, decision fatigue). Question deviations.
-- **Cap `UX.md` at ~500 lines.** Long markdown bloats downstream context (`anchor-files`, `features`, design skills all read this) and becomes unscannable. Sweet spot: 100–400 lines. If the skeleton would exceed 500 lines, split into a parent `UX.md` (page inventory + IA + global anti-patterns) plus per-page sub-files in a `ux/` folder (e.g., `ux/home.md`, `ux/pricing.md`) and cross-link.
+- **Cap `UX.md` at ~500 lines.** Long markdown bloats downstream context (`setup`, `features`, design skills all read this) and becomes unscannable. Sweet spot: 100–400 lines. If the skeleton would exceed 500 lines, split into a parent `UX.md` (page inventory + IA + global anti-patterns) plus per-page sub-files in a `ux/` folder (e.g., `ux/home.md`, `ux/pricing.md`) and cross-link.
 - **Cross-references keep the docs honest.** If `UX.md` names a component, `DESIGN_SYSTEM.md` should define it. If `UX.md` names an integration, `ARCHITECTURE.md` should document it.
 - **2026 patterns worth knowing:**
   - Outcome-focused H1 (≤8 words) beats clever positioning

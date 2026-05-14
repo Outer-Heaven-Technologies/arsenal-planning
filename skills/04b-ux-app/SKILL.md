@@ -26,7 +26,7 @@ Generate a `UX.md` file: the UX backbone of an authenticated web application. We
 - `UX.md` = UX — app architecture, screen inventory, navigation hierarchy, engagement loops, empty states, what goes where and why
 - `DESIGN_SYSTEM.md` = UI — how it looks (tokens, components, motion)
 
-Generate `UX.md` first. `DESIGN_SYSTEM.md` references it. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from `anchor-files`, cross-check after generation.
+Generate `UX.md` first. `DESIGN_SYSTEM.md` references it. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from `setup`, cross-check after generation.
 
 ## Paths
 
@@ -34,7 +34,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |

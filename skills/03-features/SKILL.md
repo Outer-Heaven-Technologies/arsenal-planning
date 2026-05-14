@@ -5,9 +5,9 @@ description: Drills a feature list into per-feature specs an engineer or coding 
 
 # Plan Features
 
-Turn a list of feature names into specs that can actually be built. The output is either a single `.arsenal/FEATURES.md` or a split `.arsenal/features/` directory (one file per feature plus an index) — whichever fits the project size. Each spec defines a feature with enough rigor that an engineer (or `anchor-files`) can make architectural decisions without guessing.
+Turn a list of feature names into specs that can actually be built. The output is either a single `.arsenal/FEATURES.md` or a split `.arsenal/features/` directory (one file per feature plus an index) — whichever fits the project size. Each spec defines a feature with enough rigor that an engineer (or `setup`) can make architectural decisions without guessing.
 
-This skill sits between `mvp` (which decides *what* to build at a high level) and `anchor-files` (which decides *how* to build it). It can also be used standalone — no prior planning docs required.
+This skill sits between `mvp` (which decides *what* to build at a high level) and `setup` (which decides *how* to build it). It can also be used standalone — no prior planning docs required.
 
 ## Paths
 
@@ -15,7 +15,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
@@ -394,11 +394,11 @@ If a feature is genuinely simple, don't pad the spec with fake complexity. A 4-l
 - **Don't invent features.** If the user's list has 8 features, the output has 8 features. The skill structures, doesn't expand.
 - **Push back once, then move on.** If the user makes a call you disagree with, flag it once with the concrete reason. If they hold the position, write the spec their way and don't bring it up again.
 - **Capture decisions, not arguments.** "Alternatives Considered" lists what was rejected and why — not the back-and-forth that got there.
-- **No code in feature specs.** Schema sketches use plain field-and-type notation, not Swift/Kotlin/SQL. Implementation language belongs in `anchor-files`.
+- **No code in feature specs.** Schema sketches use plain field-and-type notation, not Swift/Kotlin/SQL. Implementation language belongs in `setup`.
 - **No design specs in feature specs.** "Largest element on screen" is fine. Hex colors, font sizes, exact spacing belong in the design phase.
-- **Stop when done with the right handoff for the project type.** When all features are drilled and the user confirms the docs are complete, end with a handoff that routes by project type. Don't generically point at `anchor-files` — most projects need UX and design planning first.
-  - **UI projects (marketing site, authenticated webapp, native iOS, etc.):** next is the `ux-*` variant that matches the surface (`ux-web` for marketing sites, `ux-app` for authenticated webapps, `ux-ios` for native iOS) → then `design` → then `anchor-files`. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `ux-app` to map screens and engagement model, then `design` for the visual spec, then `anchor-files` to scaffold the foundation."*
-  - **Non-UI projects (CLI, library, API, server-only):** skip `ux-*` and `design`. Next is `anchor-files` directly. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `anchor-files` to scaffold the technical foundation."*
+- **Stop when done with the right handoff for the project type.** When all features are drilled and the user confirms the docs are complete, end with a handoff that routes by project type. Don't generically point at `setup` — most projects need UX and design planning first.
+  - **UI projects (marketing site, authenticated webapp, native iOS, etc.):** next is the `ux-*` variant that matches the surface (`ux-web` for marketing sites, `ux-app` for authenticated webapps, `ux-ios` for native iOS) → then `design` → then `setup`. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `ux-app` to map screens and engagement model, then `design` for the visual spec, then `setup` to scaffold the foundation."*
+  - **Non-UI projects (CLI, library, API, server-only):** skip `ux-*` and `design`. Next is `setup` directly. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `setup` to scaffold the technical foundation."*
   - In split mode, substitute `.arsenal/features/` (N feature files + README index) for `.arsenal/FEATURES.md` in either handoff.
   - **Pick the variant based on intake.** Step 1 already established what's being built; don't re-ask the user. If you're unsure between `ux-web` and `ux-app`, ask once before producing the handoff.
 - **Cap output files at ~500 lines.** Long markdown bloats downstream context and becomes unscannable. Sweet spot: 100–400 lines. In single mode, if `FEATURES.md` would exceed 500 lines, switch to split mode (one file per feature). In split mode, if any individual feature file would exceed 500 lines, split it into a parent + sub-files (e.g., `auth.md` + `auth-flows.md` + `auth-edge-cases.md`) and cross-link.

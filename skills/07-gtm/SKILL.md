@@ -5,7 +5,7 @@ description: Builds a research-backed go-to-market plan covering positioning, ch
 
 # Plan GTM
 
-Build a research-backed launch and growth plan for a product that's been built (or is nearly complete). This skill picks up where `/arsenal-planning:mvp` and `/arsenal-build:anchor-files` leave off — it answers "how do I get this in front of people and make money?"
+Build a research-backed launch and growth plan for a product that's been built (or is nearly complete). This skill picks up where `/arsenal-planning:mvp` and `/arsenal-build:setup` leave off — it answers "how do I get this in front of people and make money?"
 
 ## Paths
 
@@ -13,7 +13,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
@@ -56,8 +56,8 @@ If `.claude/settings.json` doesn't exist or doesn't have a strategy deny, this i
 **Then, gather context.** Look for existing project context — this skill builds on prior work:
 
 **If running in Claude Code (has filesystem access):**
-- Check for `.arsenal/strategy/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `.arsenal/strategy/MVP_SPEC.md` from `/arsenal-planning:mvp`
-- Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/arsenal-build:anchor-files`
+- Check for `.arsenal/strategy/research/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `.arsenal/strategy/MVP_SPEC.md` from `/arsenal-planning:mvp`
+- Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/arsenal-build:setup`
 - Scan the codebase to understand what's actually been built (routes, features, UI)
 - Use all of this as input context — don't ask the user to repeat what's already documented
 

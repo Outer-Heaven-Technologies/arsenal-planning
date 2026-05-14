@@ -5,7 +5,7 @@ description: Produces an executive-grade unified research dossier — market ove
 
 # Market Analysis
 
-Produce an **executive-grade unified research dossier** that a CEO or key decision-maker could read end-to-end and make a strategic call from. Output: `.arsenal/strategy/MARKET_RESEARCH.md`.
+Produce an **executive-grade unified research dossier** that a CEO or key decision-maker could read end-to-end and make a strategic call from. Output: `.arsenal/strategy/research/MARKET_RESEARCH.md`.
 
 The dossier follows MBA / consulting conventions (Pyramid Principle, SCR exec summary, "So what?" closures per section). Research is always thorough — every claim cited with `[source: URL, tier: T1–T4, confidence: H/M/L]`. The output **format** scales to the audience (Brief / Standard / Comprehensive), but the underlying research methodology is uniform.
 
@@ -17,7 +17,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
 | Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
@@ -39,9 +39,9 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | File | Purpose |
 |------|---------|
-| `.arsenal/strategy/MARKET_RESEARCH.md` | Unified executive research dossier — market + customer + industry structure (with Porter's all 5 forces) + conditional PESTLE + SWOT synthesis + risks + strategic recommendations + appendix (methodology, tier-graded sources, sizing math, confidence summary). Body 3–15 pages depending on format; appendix excluded from page count. |
+| `.arsenal/strategy/research/MARKET_RESEARCH.md` | Unified executive research dossier — market + customer + industry structure (with Porter's all 5 forces) + conditional PESTLE + SWOT synthesis + risks + strategic recommendations + appendix (methodology, tier-graded sources, sizing math, confidence summary). Body 3–15 pages depending on format; appendix excluded from page count. |
 
-A working `.arsenal/strategy/RESEARCH_PLAN.md` is produced during research and stays as historical record.
+A working `.arsenal/strategy/research/RESEARCH_PLAN.md` is produced during research and stays as historical record.
 
 ## Workflow
 
@@ -97,7 +97,7 @@ Capture flags. **Prompting, not gating** — silence = proceed. The absence of a
 
 Dispatch structured parallel research via the `dispatch-parallel` skill. This is where the research effort actually goes.
 
-**Step 1 — Write the research plan.** Save to `.arsenal/strategy/RESEARCH_PLAN.md`. 2–5 specific research questions (testable questions, not topics) covering §1 + §2 of the dossier:
+**Step 1 — Write the research plan.** Save to `.arsenal/strategy/research/RESEARCH_PLAN.md`. 2–5 specific research questions (testable questions, not topics) covering §1 + §2 of the dossier:
 
 - **Q1: Market sizing** — TAM/SAM/SOM, bottom-up calculation with assumptions, top-down sanity check
 - **Q2: Customer JTBD** — what jobs (functional, emotional, social) are people hiring solutions for in this space? (Christensen framing)
@@ -309,7 +309,7 @@ Finalize the **Appendix** (kept brief, excluded from page count, but sources are
 
 Tell the user where the dossier landed and what natural next steps exist:
 
-- The unified `.arsenal/strategy/MARKET_RESEARCH.md` is the deliverable
+- The unified `.arsenal/strategy/research/MARKET_RESEARCH.md` is the deliverable
 - For product validation → `/arsenal-planning:mvp` to drill into the MVP spec (it'll read this dossier as context)
 - For investor decks → the Comprehensive-format dossier is itself the artifact; consider extracting the Exec Summary as a one-pager
 - For market-entry decisions → the §7 Strategic Implications carries the call
