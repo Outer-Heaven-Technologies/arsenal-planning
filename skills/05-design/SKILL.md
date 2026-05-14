@@ -31,16 +31,11 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 - `SKILL.md` — this file. Orchestration logic: when to fetch, where to save, how to handle paths.
 - `references/template.md` — canonical 9-section DESIGN.md structure with field-level guidance. Owns format. Read by Path B before extraction and Path C before invention.
-- `references/example-claude.md` — warm / editorial / quiet. Default North Star. Serif, parchment, earthy accent. Read for premium content, publishing, AI/research products.
-- `references/example-apple.md` — cinematic / minimal / premium consumer. Monochrome sections, a single chromatic accent, photography-as-hero. Read for consumer hardware and luxury product brands.
-- `references/example-lamborghini.md` — loud / luxury / dramatic / maximalist. Read for automotive, luxury, bold editorial, or any high-intensity brand.
-- `references/preview-template.md` — HTML template for generating Path B and Path C previews.
+- `references/example-claude.md` — warm / editorial / quiet North Star example. Serif, parchment, earthy accent. The voice + depth reference for Path B (extracts) and Path C (inspiration). Read alongside `template.md` whenever writing a new DESIGN.md.
 
-**Hierarchy of authority for DESIGN.md content:** template.md owns *structure* (section names, ordering, format, required subsections). The three example files collectively own *voice* (tone, depth, specificity) — each covers a different aesthetic territory. SKILL.md owns *workflow* (this file). When SKILL.md and template.md appear to disagree on structural details, template.md wins.
+**Hierarchy of authority for DESIGN.md content:** `template.md` owns *structure* (section names, ordering, format, required subsections). `example-claude.md` owns *voice* (tone, depth, specificity) as the reference example. SKILL.md owns *workflow* (this file). When SKILL.md and template.md appear to disagree on structural details, template.md wins.
 
-**Example selection:** Path B reads `template.md` + **one closest-match example**, not all three. template.md's opening section spells out which example maps to which brand archetype. Reading all three per run is wasteful context; reading none at all is how voice drifts toward generic.
-
-**Path C example selection:** same one-example default. Exception: when the user's direction explicitly mixes archetypes ("warm but loud", "editorial meets brutalist"), read two — that's the only legitimate case for multiple examples in one run.
+**Example use:** Path B and Path C read `template.md` + `example-claude.md` together. The example sets the bar for how deep and specific each section should be. Don't reproduce the example's aesthetic — reproduce its *care*. Brand archetypes that diverge sharply from claude's warm/editorial register (loud/luxury, brutalist, cinematic-minimal) still benefit from the example's section depth even if the voice differs.
 
 ## Resolution flow
 
@@ -163,7 +158,7 @@ Cross-reference parsed CSS values against the screenshot. If a color appears dom
 
 Save to `/tmp/design/<slug>/DESIGN.md`.
 
-**Generate previews.** After writing DESIGN.md, generate `preview.html` (and `preview-dark.html` if the source uses dark mode) per `references/preview-template.md`. Save them alongside the DESIGN.md in the staging directory. Path B always ships with previews — they're how the user sanity-checks the extraction before saving.
+**Generate previews.** After writing DESIGN.md, generate `preview.html` (and `preview-dark.html` if the source uses dark mode) as a self-contained HTML demo of the design. Include: typography hierarchy (h1 → body → caption), the full color palette as labeled swatches, key components per the DESIGN.md Components section, and a representative page-level composition that uses the tokens together. Inline all styles — preview files must render standalone, no external CSS or assets. Save them alongside the DESIGN.md in the staging directory. Path B always ships with previews — they're how the user sanity-checks the extraction before saving.
 
 Continue to Step 4.
 
@@ -322,9 +317,9 @@ The preview HTMLs visualize a design file in the browser. Not a workflow step �
 
 Behavior differs by path:
 
-- **Path A (catalog):** previews are fetched verbatim from getdesign.md in Step 3a. They are authoritative, brand-accurate, and styled by the catalog's curator. Never regenerate them from the template.
-- **Path B (fresh extract):** generated in Step 3b from `references/preview-template.md`. Always generated alongside the DESIGN.md — Path B never ships without a preview.
-- **Path C (inspiration):** generated in Step 3c from `references/preview-template.md`, same as Path B. The preview reflects the *invented* design, not any of the refs. Always generated.
+- **Path A (catalog):** previews are fetched verbatim from getdesign.md in Step 3a. They are authoritative, brand-accurate, and styled by the catalog's curator. Never regenerate them.
+- **Path B (fresh extract):** generated inline in Step 3b as self-contained HTML — typography hierarchy + color palette + key components + a page-level composition, all styles inlined. Always generated alongside the DESIGN.md — Path B never ships without a preview.
+- **Path C (inspiration):** generated inline in Step 3c, same shape as Path B. The preview reflects the *invented* design, not any of the refs. Always generated.
 
 When the user saves, the Step 5 `mv` sweeps preview files along with the DESIGN.md automatically — no extra handling needed.
 

@@ -5,7 +5,7 @@ description: Builds a research-backed go-to-market plan covering positioning, ch
 
 # Plan GTM
 
-Build a research-backed launch and growth plan for a product that's been built (or is nearly complete). This skill picks up where `/mvp` and `/anchor-files` leave off — it answers "how do I get this in front of people and make money?"
+Build a research-backed launch and growth plan for a product that's been built (or is nearly complete). This skill picks up where `/arsenal-planning:mvp` and `/arsenal-build:anchor-files` leave off — it answers "how do I get this in front of people and make money?"
 
 ## Paths
 
@@ -37,7 +37,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 | `.arsenal/strategy/GTM_STRATEGY.md` | Positioning, channels, pricing, launch plan |
 | `.arsenal/strategy/REVENUE_MODEL.md` | Revenue scenarios, unit economics, growth projections |
 
-Files go in the same `.arsenal/strategy/` directory used by `/mvp`. If those docs exist, reference them — don't redo the research.
+Files go in the same `.arsenal/strategy/` directory used by `/arsenal-planning:mvp`. If those docs exist, reference them — don't redo the research.
 
 ## Workflow
 
@@ -57,13 +57,13 @@ If `.claude/settings.json` doesn't exist or doesn't have a strategy deny, this i
 
 **If running in Claude Code (has filesystem access):**
 - Check for `.arsenal/strategy/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `.arsenal/strategy/MVP_SPEC.md` from `/arsenal-planning:mvp`
-- Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/anchor-files`
+- Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/arsenal-build:anchor-files`
 - Scan the codebase to understand what's actually been built (routes, features, UI)
 - Use all of this as input context — don't ask the user to repeat what's already documented
 
 **If running elsewhere (no filesystem access):**
 - Ask the user to provide: the MVP spec, any market research or competitive analysis they've done, and a brief description of what they've built
-- If they have the planning docs from `/mvp`, ask them to paste or attach the relevant ones
+- If they have the planning docs from `/arsenal-planning:mvp`, ask them to paste or attach the relevant ones
 
 **Always ask the user (regardless of context available):**
 - What's your revenue goal? (If they don't have one, that's fine — you'll propose scenarios in Step 2)
@@ -339,7 +339,7 @@ At the end of each month, revisit:
 
 - **Use real data.** Search the web for pricing benchmarks, traffic estimates, channel effectiveness data. Don't invent conversion rates.
 - **Be honest about the math.** If the user's target requires unrealistic growth rates or conversion rates, say so. Propose an achievable alternative.
-- **Build on existing work.** If `/mvp` docs exist, reference them heavily. Don't redo market research or competitive analysis — extend it into actionable GTM.
+- **Build on existing work.** If `/arsenal-planning:mvp` docs exist, reference them heavily. Don't redo market research or competitive analysis — extend it into actionable GTM.
 - **No tech decisions.** Don't recommend analytics tools, email platforms, or ad tech. Recommend *strategies*. The user will pick their own tools.
 - **Respect solo operator constraints — but factor in AI leverage.** A solo dev without tooling can't run 5 channels. But a solo dev with AI agents, automation, and smart workflows can operate at 3-5x capacity. During intake, assess the user's AI stack and adjust channel recommendations accordingly. For each channel, note where AI can handle the heavy lifting (e.g., "use AI to draft weekly newsletter content, you review and send" or "use Claude to generate 10 LinkedIn post variants, schedule the best 3"). The goal is to maximize output per hour of the operator's attention, not just minimize the number of channels.
 - **Pre-commit to decisions.** The decision triggers and monthly review template exist so the user doesn't have to think from scratch every month. Help them decide in advance what they'll do when things go right or wrong.
