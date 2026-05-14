@@ -188,7 +188,7 @@ Drills each feature in a list into a spec an engineer or coding agent can implem
 4. **Write.** One spec per feature.
 5. **Reconcile.** Updates `MVP_SPEC.md` if drilling reshuffled Must/Should/Won't.
 
-Split-file mode is built to pair with downstream build skills (in arsenal-build): a `Read(.arsenal/features/*)` deny rule in `.claude/settings.json` lets the controller opt into one feature spec at a time. With a single combined file, the deny rule is all-or-nothing.
+Split-file mode is built to pair with the v0.2 gating model in downstream build plugins: `Read(.arsenal/features/**)` baseline-denies all feature specs, and `arsenal-build:expand-phase` mutates the deny list per phase to grant access only to the in-scope features. With a single combined `FEATURES.md`, this granular per-feature gating isn't possible — deny is all-or-nothing.
 
 **How to use it**
 
