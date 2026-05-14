@@ -5,24 +5,25 @@ description: Drills a feature list into per-feature specs an engineer or coding 
 
 # Plan Features
 
-Turn a list of feature names into specs that can actually be built. The output is either a single `planning/FEATURES.md` or a split `planning/features/` directory (one file per feature plus an index) — whichever fits the project size. Each spec defines a feature with enough rigor that an engineer (or `anchor-files`) can make architectural decisions without guessing.
+Turn a list of feature names into specs that can actually be built. The output is either a single `.arsenal/FEATURES.md` or a split `.arsenal/features/` directory (one file per feature plus an index) — whichever fits the project size. Each spec defines a feature with enough rigor that an engineer (or `anchor-files`) can make architectural decisions without guessing.
 
 This skill sits between `mvp` (which decides *what* to build at a high level) and `anchor-files` (which decides *how* to build it). It can also be used standalone — no prior planning docs required.
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Philosophy
 
@@ -42,13 +43,13 @@ Two output structures are supported. The choice happens once at the start of Ste
 
 **Single-file mode:**
 ```
-planning/FEATURES.md
+.arsenal/FEATURES.md
 ```
 One document with one `##` section per feature.
 
 **Split-file mode:**
 ```
-planning/features/
+.arsenal/features/
 ├── README.md                # index: name, status, priority, deps, phase
 ├── recipe-capture.md
 ├── recipe-library.md
@@ -67,9 +68,9 @@ One file per feature plus an index. Each feature file contains the full spec for
 
 The default is a suggestion, not a rule — the user picks. Ask once, early, with the count-aware default, then proceed.
 
-**Why split-file mode exists:** With features in separate files, downstream skills (`features-*` (build)) can read only the features relevant to the current phase, never holding the rest in context. Combined with `Read(planning/features/*)` deny rules in `.claude/settings.json`, this gives surgical, intentional access — the controller explicitly opts in to specific feature files during phase expansion. With one big file, deny is binary.
+**Why split-file mode exists:** With features in separate files, downstream skills (`features-*` (build)) can read only the features relevant to the current phase, never holding the rest in context. Combined with `Read(.arsenal/features/*)` deny rules in `.claude/settings.json`, this gives surgical, intentional access — the controller explicitly opts in to specific feature files during phase expansion. With one big file, deny is binary.
 
-If a `planning/MVP_SPEC.md` exists, this skill keeps it consistent with the feature docs as decisions emerge — see the "Auto-Updating MVP_SPEC.md" section below. Works the same regardless of single/split mode.
+If a `.arsenal/strategy/MVP_SPEC.md` exists, this skill keeps it consistent with the feature docs as decisions emerge — see the "Auto-Updating MVP_SPEC.md" section below. Works the same regardless of single/split mode.
 
 ## Workflow
 
@@ -77,7 +78,7 @@ If a `planning/MVP_SPEC.md` exists, this skill keeps it consistent with the feat
 
 Find or build the feature list before doing anything else.
 
-**If `planning/MVP_SPEC.md` exists:** Read it. Extract the feature list from the "Must Have" and "Should Have" sections. Present the extracted list to the user and confirm: "Here's what I pulled — should we drill all of these, a subset, or do you want to add anything?"
+**If `.arsenal/strategy/MVP_SPEC.md` exists:** Read it. Extract the feature list from the "Must Have" and "Should Have" sections. Present the extracted list to the user and confirm: "Here's what I pulled — should we drill all of these, a subset, or do you want to add anything?"
 
 **If no MVP_SPEC.md exists:** Ask the user for the feature list. Accept any format — bulleted, free-text, screenshot description, etc. Restate it back as a clean list and confirm before proceeding.
 
@@ -85,12 +86,12 @@ Find or build the feature list before doing anything else.
 
 **Choose output structure (single vs split).** Once the feature list and order are confirmed, count the features and ask:
 
-- 1–5 features: *"You have N features. I'll write them to a single `planning/FEATURES.md`. Use split files instead (one per feature)? [single (default) / split]"*
-- 6+ features: *"You have N features. Recommended: split files at `planning/features/<slug>.md` plus an index — this lets `features-*` (build) read only the features relevant to a phase and supports deny-rule isolation. Use single `planning/FEATURES.md` instead? [split (default) / single]"*
+- 1–5 features: *"You have N features. I'll write them to a single `.arsenal/FEATURES.md`. Use split files instead (one per feature)? [single (default) / split]"*
+- 6+ features: *"You have N features. Recommended: split files at `.arsenal/features/<slug>.md` plus an index — this lets `features-*` (build) read only the features relevant to a phase and supports deny-rule isolation. Use single `.arsenal/FEATURES.md` instead? [split (default) / single]"*
 
-If user picks **split**, also confirm the directory: default `planning/features/` unless project uses a different convention.
+If user picks **split**, also confirm the directory: default `.arsenal/features/` unless project uses a different convention.
 
-If `planning/FEATURES.md` already exists from a prior run and the user is adding features, default to that structure (don't migrate without asking). If `planning/features/` already exists, default to that structure. Ask only when starting fresh.
+If `.arsenal/FEATURES.md` already exists from a prior run and the user is adding features, default to that structure (don't migrate without asking). If `.arsenal/features/` already exists, default to that structure. Ask only when starting fresh.
 
 Record the chosen structure for the rest of the run. All subsequent writes follow it.
 
@@ -135,9 +136,9 @@ For each feature, the goal is to fill out every section of the spec template (be
 
 After drilling each feature, write its spec using the structure defined below. Show the user the written section and ask for changes before moving on.
 
-**Single-file mode:** Append the section to `planning/FEATURES.md`. Each feature is a `##`-level heading. Add `---` separator between features.
+**Single-file mode:** Append the section to `.arsenal/FEATURES.md`. Each feature is a `##`-level heading. Add `---` separator between features.
 
-**Split-file mode:** Write the spec to `planning/features/<slug>.md`. The slug is the feature name lowercased, spaces collapsed to hyphens (e.g., "Recipe Capture" → `recipe-capture.md`, "Team Invitations" → `team-invitations.md`). The `##` heading becomes a `#` heading at the top of the file (it's now the document title, not a section). The rest of the structure is identical. After writing the file, **also update `planning/features/README.md`** (the index) to reflect this feature's status, priority, and dependencies.
+**Split-file mode:** Write the spec to `.arsenal/features/<slug>.md`. The slug is the feature name lowercased, spaces collapsed to hyphens (e.g., "Recipe Capture" → `recipe-capture.md`, "Team Invitations" → `team-invitations.md`). The `##` heading becomes a `#` heading at the top of the file (it's now the document title, not a section). The rest of the structure is identical. After writing the file, **also update `.arsenal/features/README.md`** (the index) to reflect this feature's status, priority, and dependencies.
 
 **Slug normalization rules** (applies to every feature name → filename conversion):
 - Lowercase the wordmark
@@ -148,11 +149,11 @@ After drilling each feature, write its spec using the structure defined below. S
 - Trim leading and trailing hyphens
 - No double-hyphens (collapse runs of hyphens to one)
 
-These rules are deterministic so the same feature name always produces the same slug across runs — important for idempotence when downstream skills reference `planning/features/<exact-slug>.md` paths.
+These rules are deterministic so the same feature name always produces the same slug across runs — important for idempotence when downstream skills reference `.arsenal/features/<exact-slug>.md` paths.
 
 If using Option B (draft-and-redline) or Option C (hybrid), write all features first (one file per feature in split mode, or all sections in single mode), then walk through them with the user.
 
-**Maintaining `planning/features/README.md` (split mode only):**
+**Maintaining `.arsenal/features/README.md` (split mode only):**
 
 The index is a small (≤500 token) navigation file. It contains:
 
@@ -169,11 +170,11 @@ The index is a small (≤500 token) navigation file. It contains:
 | Smart Tagging | [smart-tagging.md](smart-tagging.md) | Drafting | Should | Recipe Library | 2 |
 ```
 
-Update the index after every feature is written or status changes. The index is the only file in `planning/features/` that downstream skills can read freely — individual feature files are read only when explicitly opted in.
+Update the index after every feature is written or status changes. The index is the only file in `.arsenal/features/` that downstream skills can read freely — individual feature files are read only when explicitly opted in.
 
 ### Step 5: Auto-Update MVP_SPEC.md
 
-If `planning/MVP_SPEC.md` exists, keep it consistent as decisions emerge. The feature docs are the source of truth for what's being built — MVP_SPEC reflects current state. Propagate these changes:
+If `.arsenal/strategy/MVP_SPEC.md` exists, keep it consistent as decisions emerge. The feature docs are the source of truth for what's being built — MVP_SPEC reflects current state. Propagate these changes:
 
 - **Feature deferred during drilling** → move from "Must Have" to "Won't Have" in MVP_SPEC.md with a one-line rationale.
 - **Feature added during drilling** (user introduces a new feature mid-Step-3) → add it to MVP_SPEC.md under the bucket the user classified it as (Must / Should / Won't, per the "scope mid-spec" prompt in Step 3), with a one-line rationale and an `(added during feature drilling)` note so it's traceable.
@@ -198,7 +199,7 @@ During implementation, `arsenal-build:run-task-feature` may amend FEATURES.md / 
 
 Use this exact structure for every feature. Write in markdown. The structure is identical in single-file and split-file modes — the only difference is the heading level (`##` per feature in single mode, `#` as document title in split mode) and where the file lives.
 
-**Single-file mode** — `planning/FEATURES.md` opens with a project-level header, then each feature is a `##` section:
+**Single-file mode** — `.arsenal/FEATURES.md` opens with a project-level header, then each feature is a `##` section:
 
 ```markdown
 # Features: [Project Name]
@@ -285,7 +286,7 @@ Test for inclusion: "Would a competent coding agent benefit from seeing this, OR
 [Same structure...]
 ```
 
-**Split-file mode** — each feature lives in its own file `planning/features/<slug>.md`. The same structure applies, but the feature heading becomes the document title at `#` level (since it's the only feature in the file):
+**Split-file mode** — each feature lives in its own file `.arsenal/features/<slug>.md`. The same structure applies, but the feature heading becomes the document title at `#` level (since it's the only feature in the file):
 
 ```markdown
 # [Feature Name]
@@ -297,11 +298,11 @@ Test for inclusion: "Would a competent coding agent benefit from seeing this, OR
 [... rest of structure identical to single-file mode ...]
 ```
 
-The project-level header (date, drilling status) lives in `planning/features/README.md` instead of being repeated per file.
+The project-level header (date, drilling status) lives in `.arsenal/features/README.md` instead of being repeated per file.
 
 ## Worked Example
 
-Here is what a well-drilled feature looks like. Use this as a quality bar — every feature spec (whether in `FEATURES.md` or `planning/features/<slug>.md`) should be at least this concrete.
+Here is what a well-drilled feature looks like. Use this as a quality bar — every feature spec (whether in `FEATURES.md` or `.arsenal/features/<slug>.md`) should be at least this concrete.
 
 ```markdown
 ## Recipe Capture
@@ -364,7 +365,7 @@ When I find a recipe I want to try later, I want to capture it from any site wit
 
 ## Quality Bar
 
-Before considering the feature specs complete (whether in `FEATURES.md` or `planning/features/`), every feature should pass these checks:
+Before considering the feature specs complete (whether in `FEATURES.md` or `.arsenal/features/`), every feature should pass these checks:
 
 - **Could a coding agent build this without asking questions?** If they'd need to make assumptions, the spec is incomplete.
 - **Are there any unresolved questions?** There shouldn't be. Every question raised during drilling should be answered (in the relevant section) or punted (to Important as a deliberate deferral). No "TBD," no "decide later."
@@ -396,8 +397,8 @@ If a feature is genuinely simple, don't pad the spec with fake complexity. A 4-l
 - **No code in feature specs.** Schema sketches use plain field-and-type notation, not Swift/Kotlin/SQL. Implementation language belongs in `anchor-files`.
 - **No design specs in feature specs.** "Largest element on screen" is fine. Hex colors, font sizes, exact spacing belong in the design phase.
 - **Stop when done with the right handoff for the project type.** When all features are drilled and the user confirms the docs are complete, end with a handoff that routes by project type. Don't generically point at `anchor-files` — most projects need UX and design planning first.
-  - **UI projects (marketing site, authenticated webapp, native iOS, etc.):** next is the `ux-*` variant that matches the surface (`ux-web` for marketing sites, `ux-app` for authenticated webapps, `ux-ios` for native iOS) → then `design` → then `anchor-files`. Example: *"`planning/FEATURES.md` is ready. Recommended next: `ux-app` to map screens and engagement model, then `design` for the visual spec, then `anchor-files` to scaffold the foundation."*
-  - **Non-UI projects (CLI, library, API, server-only):** skip `ux-*` and `design`. Next is `anchor-files` directly. Example: *"`planning/FEATURES.md` is ready. Recommended next: `anchor-files` to scaffold the technical foundation."*
-  - In split mode, substitute `planning/features/` (N feature files + README index) for `planning/FEATURES.md` in either handoff.
+  - **UI projects (marketing site, authenticated webapp, native iOS, etc.):** next is the `ux-*` variant that matches the surface (`ux-web` for marketing sites, `ux-app` for authenticated webapps, `ux-ios` for native iOS) → then `design` → then `anchor-files`. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `ux-app` to map screens and engagement model, then `design` for the visual spec, then `anchor-files` to scaffold the foundation."*
+  - **Non-UI projects (CLI, library, API, server-only):** skip `ux-*` and `design`. Next is `anchor-files` directly. Example: *"`.arsenal/FEATURES.md` is ready. Recommended next: `anchor-files` to scaffold the technical foundation."*
+  - In split mode, substitute `.arsenal/features/` (N feature files + README index) for `.arsenal/FEATURES.md` in either handoff.
   - **Pick the variant based on intake.** Step 1 already established what's being built; don't re-ask the user. If you're unsure between `ux-web` and `ux-app`, ask once before producing the handoff.
 - **Cap output files at ~500 lines.** Long markdown bloats downstream context and becomes unscannable. Sweet spot: 100–400 lines. In single mode, if `FEATURES.md` would exceed 500 lines, switch to split mode (one file per feature). In split mode, if any individual feature file would exceed 500 lines, split it into a parent + sub-files (e.g., `auth.md` + `auth-flows.md` + `auth-edge-cases.md`) and cross-link.

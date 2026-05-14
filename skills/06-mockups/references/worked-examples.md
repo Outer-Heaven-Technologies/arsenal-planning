@@ -28,26 +28,26 @@ To keep the examples concrete, all three passes below use a single fictional pro
 
 The upstream artifacts (sketched — these aren't real files, just what they'd contain for this example):
 
-**`planning/MVP_SPEC.md` (sketched):**
+**`.arsenal/strategy/MVP_SPEC.md` (sketched):**
 - Target user: solo developers / creatives / professionals building 1-3 daily habits
 - Core value loop: open the app → see today → check in → feel quiet pride → return tomorrow
 - Anti-positioning: not gamified; no XP bars, levels, badges, or progress percentages
 
-**`planning/features/habit-capture.md` (sketched):**
+**`.arsenal/features/habit-capture.md` (sketched):**
 - Job story: When I want to track a new behavior, I want to capture it in under 10 seconds, so I don't talk myself out of starting.
 - States: empty (first run), creating (modal), active, paused
 - Important: do not auto-suggest habits; the user names them
 
-**`planning/features/daily-checkin.md` (sketched):**
+**`.arsenal/features/daily-checkin.md` (sketched):**
 - Job story: When I open the app each morning, I want to see what's due and check in on yesterday, so I stay honest without effort.
 - States: untouched (today not started), in-progress (some habits checked), complete
 
-**`docs/UX.md` (sketched):**
+**`.arsenal/design/UX.md` (sketched):**
 - Pages: Dashboard (today), Habit Detail, Weekly Review, Settings, Paywall, Onboarding
 - App shell: minimal top bar (wordmark + settings); no sidebar; floating quick-capture button
 - Empty states: every list view has a designed empty state
 
-**`docs/DESIGN.md` (sketched):**
+**`.arsenal/design/DESIGN.md` (sketched):**
 - Atmosphere: calm, warm, minimal, editorial
 - Color: sand canvas `#F5F1EC`, charcoal text `#1F1B16`, single olive accent `#7A8C5E`, error rust `#B05050`
 - Typography: serif headlines (Souvenir Pro 28/24/20), sans-serif body (Inter 16/14)
@@ -68,7 +68,7 @@ pass: 1
 screen: dashboard
 surface: web-app
 status: ready
-output_path: docs/mockups/anchor-dashboard.png
+output_path: .arsenal/design/mockups/anchor-dashboard.png
 ---
 
 # Pass 1 Brief — Streakly Dashboard (Anchor)
@@ -76,7 +76,7 @@ output_path: docs/mockups/anchor-dashboard.png
 ## Surface and frame
 - **Artifact type:** dashboard (single screen)
 - **Platform & frame:** web, desktop-first (mobile responsive)
-- **Output target:** `docs/mockups/anchor-dashboard.png`
+- **Output target:** `.arsenal/design/mockups/anchor-dashboard.png`
 
 ## Audience and job-to-be-done
 - **Audience:** solo developers, creatives, professionals tracking 1–3 daily habits
@@ -86,7 +86,7 @@ output_path: docs/mockups/anchor-dashboard.png
 calm > warm > editorial > minimal
 
 ## Brand tokens (cross-reference, don't restate)
-See `docs/DESIGN.md` for the full spec.  
+See `.arsenal/design/DESIGN.md` for the full spec.  
 Key emphasis: § Color Palette (sand canvas, olive accent, no third color), § Typography (serif headlines / sans body), § Spacing (8px base rhythm)
 
 ## Sections / hierarchy (in display order)
@@ -119,13 +119,13 @@ None — this is the anchor. Establish the visual language using DESIGN.md token
 
 ### Pass 1 — Claude Design prompt
 
-**Setup:** attach `docs/DESIGN.md` to the conversation. Optionally use web-capture to grab one reference site that captures the desired feel (e.g., a publication or editorial product whose typography you admire).
+**Setup:** attach `.arsenal/design/DESIGN.md` to the conversation. Optionally use web-capture to grab one reference site that captures the desired feel (e.g., a publication or editorial product whose typography you admire).
 
 ```
 Design the dashboard screen for Streakly, a calm web habit-tracker for solo
 developers and creatives. Desktop-first, mobile responsive.
 
-I've attached docs/DESIGN.md with the full brand spec — sand canvas #F5F1EC,
+I've attached .arsenal/design/DESIGN.md with the full brand spec — sand canvas #F5F1EC,
 charcoal text #1F1B16, single olive accent #7A8C5E, Souvenir Pro serif
 headlines, Inter body, 8px spacing rhythm, 12px corner radius.
 
@@ -152,7 +152,7 @@ percentages) — those conflict with the brand's quiet pride voice.
 
 ### Pass 1 — Stitch prompt
 
-**Setup:** attach `docs/DESIGN.md` (Stitch consumes the 9-section format directly and re-passes it every turn). Keep the prompt short — Stitch handles brand context via DESIGN.md, not via prose.
+**Setup:** attach `.arsenal/design/DESIGN.md` (Stitch consumes the 9-section format directly and re-passes it every turn). Keep the prompt short — Stitch handles brand context via DESIGN.md, not via prose.
 
 ```
 Design the dashboard for Streakly — calm web habit-tracker, desktop-first,
@@ -179,7 +179,7 @@ greeting.
 
 ### Pass 1 — Open Design prompt
 
-**Setup:** select the `dashboard` skill from Open Design's catalog (or `webapp-product` if `dashboard` doesn't fit perfectly). Attach `docs/DESIGN.md`. The discovery form will surface the surface/audience/tone questions — answer them inline before the free-text prompt.
+**Setup:** select the `dashboard` skill from Open Design's catalog (or `webapp-product` if `dashboard` doesn't fit perfectly). Attach `.arsenal/design/DESIGN.md`. The discovery form will surface the surface/audience/tone questions — answer them inline before the free-text prompt.
 
 ```
 Discovery form answers:
@@ -227,8 +227,8 @@ pass: 2
 screen: habit-detail
 surface: web-app
 status: ready
-output_path: docs/mockups/habit-detail.png
-visual_reference: docs/mockups/anchor-dashboard.png
+output_path: .arsenal/design/mockups/habit-detail.png
+visual_reference: .arsenal/design/mockups/anchor-dashboard.png
 ---
 
 # Pass 2 Brief — Habit Detail
@@ -236,7 +236,7 @@ visual_reference: docs/mockups/anchor-dashboard.png
 ## Surface and frame
 - **Artifact type:** detail screen
 - **Platform & frame:** web, desktop-first (mobile responsive)
-- **Output target:** `docs/mockups/habit-detail.png`
+- **Output target:** `.arsenal/design/mockups/habit-detail.png`
 
 ## Audience and job-to-be-done
 - **Audience:** same as anchor — solo dev/creative with active habits
@@ -246,7 +246,7 @@ visual_reference: docs/mockups/anchor-dashboard.png
 Same as anchor — calm > warm > editorial > minimal
 
 ## Brand tokens (cross-reference, don't restate)
-See `docs/DESIGN.md`. Inherit visual language from `docs/mockups/anchor-dashboard.png`.
+See `.arsenal/design/DESIGN.md`. Inherit visual language from `.arsenal/design/mockups/anchor-dashboard.png`.
 
 ## Sections / hierarchy (in display order)
 1. **Top bar** — back-arrow left, edit/pause icon right
@@ -260,7 +260,7 @@ See `docs/DESIGN.md`. Inherit visual language from `docs/mockups/anchor-dashboar
 - **Primary:** 14-day current streak with 2 missed days in the last 30 days
 
 ## Visual reference
-`docs/mockups/anchor-dashboard.png` — match the visual language exactly: typography hierarchy, spacing rhythm, color application, card style.
+`.arsenal/design/mockups/anchor-dashboard.png` — match the visual language exactly: typography hierarchy, spacing rhythm, color application, card style.
 
 ## Do's and Don'ts
 - **Do:** reuse the same card style as the dashboard's habit cards.
@@ -315,21 +315,21 @@ screen: dashboard
 state: empty
 surface: web-app
 status: ready
-output_path: docs/mockups/dashboard-empty.png
-visual_reference: docs/mockups/anchor-dashboard.png
+output_path: .arsenal/design/mockups/dashboard-empty.png
+visual_reference: .arsenal/design/mockups/anchor-dashboard.png
 ---
 
 # Pass 3 Brief — Dashboard Empty State
 
 ## Surface and frame
 - **Artifact type:** state variant of the dashboard
-- **Output target:** `docs/mockups/dashboard-empty.png`
+- **Output target:** `.arsenal/design/mockups/dashboard-empty.png`
 
 ## State
 empty — user has no habits yet (first run after onboarding)
 
 ## Visual reference
-`docs/mockups/anchor-dashboard.png` — variant of this screen
+`.arsenal/design/mockups/anchor-dashboard.png` — variant of this screen
 
 ## Sections / hierarchy (empty variant — only what differs from anchor)
 1. **Top bar** — same as anchor

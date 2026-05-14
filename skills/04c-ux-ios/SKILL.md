@@ -28,18 +28,19 @@ Generate `UX.md` first. `DESIGN_SYSTEM.md` references it.
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Workflow
 
@@ -47,10 +48,10 @@ Tracked artifacts use these default locations (override via `.arsenal/config.yam
 
 Before asking the user anything, look for and read these files if they exist:
 
-- `planning/MVP_SPEC.md`
-- `docs/ARCHITECTURE.md`
+- `.arsenal/strategy/MVP_SPEC.md`
+- `.arsenal/ARCHITECTURE.md`
 - `CLAUDE.md`
-- Any other `planning/*` documents
+- Any other `.arsenal/strategy/*` documents
 
 Extract what's already known: product description, target user, feature set, monetization model.
 
@@ -297,15 +298,16 @@ After generating, tell the user:
 - Number of onboarding steps
 - Paywall strategy summary
 - Permissions and their timing
-- If `docs/DESIGN_SYSTEM.md` exists: list components named that don't have entries
+- If `.arsenal/design/DESIGN_SYSTEM.md` exists: list components named that don't have entries
 - Offer to flesh out any screen needing more detail
 
 ## File placement
 
 ```
 project-root/
-└── docs/
-    └── UX.md
+└── .arsenal/
+    └── design/
+        └── UX.md
 ```
 
 ## Important guidelines

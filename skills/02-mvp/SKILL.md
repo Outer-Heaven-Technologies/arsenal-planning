@@ -1,33 +1,34 @@
 ---
 name: mvp
-description: Drills an idea into a focused MVP spec — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads upstream `planning/MARKET_RESEARCH.md` from `market-analysis` if available; otherwise does lightweight inline research to ground the spec. Captures project intent (hobby / freelance / startup / client-work); client-work soft-routes to `features`. Surface-level tech decisions (web vs iOS, mobile vs desktop) are fair game — stack-specific decisions defer to `anchor-files`. Outputs `planning/MVP_SPEC.md`. Use when the user has an idea and wants a buildable spec — with or without prior market analysis.
+description: Drills an idea into a focused MVP spec — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads upstream `.arsenal/strategy/MARKET_RESEARCH.md` from `market-analysis` if available; otherwise does lightweight inline research to ground the spec. Captures project intent (hobby / freelance / startup / client-work); client-work soft-routes to `features`. Surface-level tech decisions (web vs iOS, mobile vs desktop) are fair game — stack-specific decisions defer to `anchor-files`. Outputs `.arsenal/strategy/MVP_SPEC.md`. Use when the user has an idea and wants a buildable spec — with or without prior market analysis.
 ---
 
 # Plan MVP
 
 Drill an idea into a focused **MVP spec** — what to build first, why, with clear success metrics and a `go / pivot / kill` recommendation.
 
-This skill produces `planning/MVP_SPEC.md`. It works two ways:
+This skill produces `.arsenal/strategy/MVP_SPEC.md`. It works two ways:
 
-- **With upstream research** — if `planning/MARKET_RESEARCH.md` exists (from `market-analysis`), this skill uses it as context. The spec lands grounded in the executive dossier's findings.
+- **With upstream research** — if `.arsenal/strategy/MARKET_RESEARCH.md` exists (from `market-analysis`), this skill uses it as context. The spec lands grounded in the executive dossier's findings.
 - **Without upstream research** — does lightweight inline research (5–10 web queries, no formal citation rigor) to validate basic assumptions before writing the spec. Faster, less rigorous than running `market-analysis` first, but enough to draft an informed spec.
 
 If you want both — full executive dossier AND focused MVP spec — run `market-analysis` first, then this skill picks up where it left off. For just the spec (client work, internal tools, fast scoping), run this skill standalone.
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Philosophy
 
@@ -41,7 +42,7 @@ Tracked artifacts use these default locations (override via `.arsenal/config.yam
 
 | File | Purpose |
 |------|---------|
-| `planning/MVP_SPEC.md` | Feature scope (Must / Should / Won't), user stories, core value loop, success metrics, phased roadmap |
+| `.arsenal/strategy/MVP_SPEC.md` | Feature scope (Must / Should / Won't), user stories, core value loop, success metrics, phased roadmap |
 
 ## Workflow
 
@@ -70,7 +71,7 @@ Confirm scope and intake summary before proceeding.
 
 Check for upstream research. Three paths.
 
-#### Path A — `planning/MARKET_RESEARCH.md` exists
+#### Path A — `.arsenal/strategy/MARKET_RESEARCH.md` exists
 
 The user has already run `market-analysis`. Read the dossier — particularly §1 (Market Overview), §2 (Customer Analysis), §3 (Industry Structure & Competition), §7 (Strategic Implications). Use these to ground the spec. Skip Path B and C.
 
@@ -112,7 +113,7 @@ Capture any pivots. These shape the spec.
 
 ### Step 4: Write MVP_SPEC.md
 
-Write `planning/MVP_SPEC.md` using the template below. The spec reflects the **current** understanding (post-Step-3 shifts), not the original Step 1 intake.
+Write `.arsenal/strategy/MVP_SPEC.md` using the template below. The spec reflects the **current** understanding (post-Step-3 shifts), not the original Step 1 intake.
 
 **Principles:**
 
@@ -122,7 +123,7 @@ Write `planning/MVP_SPEC.md` using the template below. The spec reflects the **c
 - Include clear success metrics so the user knows if the MVP worked
 - Surface-level tech decisions (web / iOS / etc.) belong here. Stack-level decisions don't — those go in `anchor-files`.
 
-**Format: `planning/MVP_SPEC.md`**
+**Format: `.arsenal/strategy/MVP_SPEC.md`**
 
 ```markdown
 # MVP Spec: [Project Name]
@@ -186,7 +187,7 @@ Write `planning/MVP_SPEC.md` using the template below. The spec reflects the **c
 [Growth features, monetization, expansion]
 
 ## Upstream Research
-[If `planning/MARKET_RESEARCH.md` was the source for this spec, reference it here: "Grounded in `planning/MARKET_RESEARCH.md` — see §X for [topic]". Otherwise note "Spec drafted from intake + lightweight research" or "Spec drafted from intake only — recommend running `/arsenal-planning:market-analysis` before significant investment".]
+[If `.arsenal/strategy/MARKET_RESEARCH.md` was the source for this spec, reference it here: "Grounded in `.arsenal/strategy/MARKET_RESEARCH.md` — see §X for [topic]". Otherwise note "Spec drafted from intake + lightweight research" or "Spec drafted from intake only — recommend running `/arsenal-planning:market-analysis` before significant investment".]
 
 ## Next Step
 → For UI projects: `/arsenal-planning:features` to drill each MVP feature, then `ux-{web,app,ios}` → `design` → `mockups` → `anchor-files` → per-phase build pipelines.

@@ -9,18 +9,19 @@ Build a research-backed launch and growth plan for a product that's been built (
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Philosophy
 
@@ -33,19 +34,29 @@ Tracked artifacts use these default locations (override via `.arsenal/config.yam
 
 | File | Purpose |
 |------|---------|
-| `planning/GTM_STRATEGY.md` | Positioning, channels, pricing, launch plan |
-| `planning/REVENUE_MODEL.md` | Revenue scenarios, unit economics, growth projections |
+| `.arsenal/strategy/GTM_STRATEGY.md` | Positioning, channels, pricing, launch plan |
+| `.arsenal/strategy/REVENUE_MODEL.md` | Revenue scenarios, unit economics, growth projections |
 
-Files go in the same `planning/` directory used by `/mvp`. If those docs exist, reference them — don't redo the research.
+Files go in the same `.arsenal/strategy/` directory used by `/mvp`. If those docs exist, reference them — don't redo the research.
 
 ## Workflow
 
-### Step 0: Gather Context
+### Step 0: Lift strategy lockdown (if applicable), then gather context
 
-Before starting, look for existing project context. This skill is designed to build on prior work:
+**First, lift the strategy lockdown if it's in place.** When build execution has started in this project, `expand-phase` will have written `Read(.arsenal/strategy/**)` to `.claude/settings.json` to deny strategy access during build. `gtm` legitimately needs `MARKET_RESEARCH.md` and `MVP_SPEC.md` from there — so:
+
+1. Read `.claude/settings.json`. If `permissions.deny` contains `Read(.arsenal/strategy/**)`, **remove that entry temporarily**. Preserve any non-arsenal entries the user added.
+2. Write back.
+3. Tell the user: *"Lifting `.arsenal/strategy/` lockdown for GTM research. Will restore at the end."*
+
+After all GTM work is done (final output written), **restore the strategy deny** by re-adding `Read(.arsenal/strategy/**)` to `permissions.deny` and writing settings back. Tell the user: *"Strategy lockdown restored."*
+
+If `.claude/settings.json` doesn't exist or doesn't have a strategy deny, this is a pre-execution invocation — proceed without mutation; strategy is freely readable.
+
+**Then, gather context.** Look for existing project context — this skill builds on prior work:
 
 **If running in Claude Code (has filesystem access):**
-- Check for `planning/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `planning/MVP_SPEC.md` from `/arsenal-planning:mvp`
+- Check for `.arsenal/strategy/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `.arsenal/strategy/MVP_SPEC.md` from `/arsenal-planning:mvp`
 - Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/anchor-files`
 - Scan the codebase to understand what's actually been built (routes, features, UI)
 - Use all of this as input context — don't ask the user to repeat what's already documented
@@ -194,7 +205,7 @@ Present the two output docs and provide:
 - A 30/60/90 day checkpoint schedule
 - Remind them that these projections need revisiting after launch with real data — the model is a starting hypothesis, not a promise
 
-## Format: `planning/GTM_STRATEGY.md`
+## Format: `.arsenal/strategy/GTM_STRATEGY.md`
 
 ```markdown
 # Go-to-Market Strategy: [Project Name]
@@ -255,7 +266,7 @@ Present the two output docs and provide:
 [the 3 things to do this week]
 ```
 
-## Format: `planning/REVENUE_MODEL.md`
+## Format: `.arsenal/strategy/REVENUE_MODEL.md`
 
 ```markdown
 # Revenue Model: [Project Name]

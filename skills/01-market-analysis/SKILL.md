@@ -5,7 +5,7 @@ description: Produces an executive-grade unified research dossier — market ove
 
 # Market Analysis
 
-Produce an **executive-grade unified research dossier** that a CEO or key decision-maker could read end-to-end and make a strategic call from. Output: `planning/MARKET_RESEARCH.md`.
+Produce an **executive-grade unified research dossier** that a CEO or key decision-maker could read end-to-end and make a strategic call from. Output: `.arsenal/strategy/MARKET_RESEARCH.md`.
 
 The dossier follows MBA / consulting conventions (Pyramid Principle, SCR exec summary, "So what?" closures per section). Research is always thorough — every claim cited with `[source: URL, tier: T1–T4, confidence: H/M/L]`. The output **format** scales to the audience (Brief / Standard / Comprehensive), but the underlying research methodology is uniform.
 
@@ -13,18 +13,19 @@ This skill is standalone. It pairs naturally with `mvp` (which produces the spec
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Philosophy
 
@@ -38,9 +39,9 @@ Tracked artifacts use these default locations (override via `.arsenal/config.yam
 
 | File | Purpose |
 |------|---------|
-| `planning/MARKET_RESEARCH.md` | Unified executive research dossier — market + customer + industry structure (with Porter's all 5 forces) + conditional PESTLE + SWOT synthesis + risks + strategic recommendations + appendix (methodology, tier-graded sources, sizing math, confidence summary). Body 3–15 pages depending on format; appendix excluded from page count. |
+| `.arsenal/strategy/MARKET_RESEARCH.md` | Unified executive research dossier — market + customer + industry structure (with Porter's all 5 forces) + conditional PESTLE + SWOT synthesis + risks + strategic recommendations + appendix (methodology, tier-graded sources, sizing math, confidence summary). Body 3–15 pages depending on format; appendix excluded from page count. |
 
-A working `planning/RESEARCH_PLAN.md` is produced during research and stays as historical record.
+A working `.arsenal/strategy/RESEARCH_PLAN.md` is produced during research and stays as historical record.
 
 ## Workflow
 
@@ -96,7 +97,7 @@ Capture flags. **Prompting, not gating** — silence = proceed. The absence of a
 
 Dispatch structured parallel research via the `dispatch-parallel` skill. This is where the research effort actually goes.
 
-**Step 1 — Write the research plan.** Save to `planning/RESEARCH_PLAN.md`. 2–5 specific research questions (testable questions, not topics) covering §1 + §2 of the dossier:
+**Step 1 — Write the research plan.** Save to `.arsenal/strategy/RESEARCH_PLAN.md`. 2–5 specific research questions (testable questions, not topics) covering §1 + §2 of the dossier:
 
 - **Q1: Market sizing** — TAM/SAM/SOM, bottom-up calculation with assumptions, top-down sanity check
 - **Q2: Customer JTBD** — what jobs (functional, emotional, social) are people hiring solutions for in this space? (Christensen framing)
@@ -308,7 +309,7 @@ Finalize the **Appendix** (kept brief, excluded from page count, but sources are
 
 Tell the user where the dossier landed and what natural next steps exist:
 
-- The unified `planning/MARKET_RESEARCH.md` is the deliverable
+- The unified `.arsenal/strategy/MARKET_RESEARCH.md` is the deliverable
 - For product validation → `/arsenal-planning:mvp` to drill into the MVP spec (it'll read this dossier as context)
 - For investor decks → the Comprehensive-format dossier is itself the artifact; consider extracting the Exec Summary as a one-pager
 - For market-entry decisions → the §7 Strategic Implications carries the call

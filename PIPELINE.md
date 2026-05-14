@@ -2,7 +2,7 @@
 
 The planning half of the arsenal pipeline. Skills chain from idea → MVP spec → feature specs → UX → design → mockup briefs → GTM. Each skill writes a markdown artifact the next reads, so you never answer the same question twice. You can enter at any stage — skills detect upstream artifacts and skip questions they already have answers to.
 
-Downstream from planning is **execution**, which lives in [arsenal-build](https://github.com/Outer-Heaven-Technologies/arsenal-build). The artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md`, `UX.md`, `DESIGN.md`, `mockup-briefs/`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`) are at canonical paths for any execution system to consume.
+Downstream from planning is **execution**, which lives in [arsenal-build](https://github.com/Outer-Heaven-Technologies/arsenal-build). The artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md`, `UX.md`, `DESIGN.md`, `mockup-briefs/`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`) are at canonical paths under `.arsenal/` for any execution system to consume.
 
 ## Linear flow
 
@@ -10,8 +10,8 @@ Downstream from planning is **execution**, which lives in [arsenal-build](https:
    [market-analysis ──►] mvp ──► features ──► ux-* ──► design ──► mockups ──► [user generates mockups] ──► (handoff to arsenal-build) ──► gtm
         │                  │           │           │          │            │                                                                  │
         ▼                  ▼           ▼           ▼          ▼            ▼                                                                  ▼
-   MARKET_RES…        MVP_SPEC.md  FEATURES.md  UX.md     DESIGN.md   planning/mockup-                                                  GTM_STRATEGY.md
-   (unified              (focused      or         (UX)       (brand)      briefs/*.md                                                       REVENUE_MODEL.md
+   MARKET_RES…        MVP_SPEC.md  FEATURES.md  UX.md     DESIGN.md   .arsenal/strategy/                                                GTM_STRATEGY.md
+   (unified              (focused      or         (UX)       (brand)      mockup-briefs/*.md                                              REVENUE_MODEL.md
     dossier;             spec)        features/*.md
     optional)
 ```
@@ -32,7 +32,7 @@ Pick the right variant based on what you're building:
 | SaaS with marketing + app | Both `ux-web` and `ux-app` | Run sequentially; each writes to its own `UX.md` section or use separate files |
 | iOS app with marketing site | Both `ux-web` and `ux-ios` | Run sequentially |
 
-All three write to `docs/UX.md`. For hybrid products, run two of them sequentially.
+All three write to `.arsenal/design/UX.md`. For hybrid products, run two of them sequentially.
 
 ## Artifact dependency graph
 
@@ -40,14 +40,14 @@ Which file each skill **reads** (`R`) and **writes** (`W`):
 
 | Skill | Reads | Writes |
 |---|---|---|
-| `market-analysis` | — | `planning/MARKET_RESEARCH.md` (unified executive dossier — market + customer + industry structure + Porter's all 5 + conditional PESTLE + SWOT + risks + recommendations), `planning/RESEARCH_PLAN.md` (working artifact, retained as historical record) |
-| `mvp` | `planning/MARKET_RESEARCH.md` (optional) | `planning/MVP_SPEC.md` |
-| `features` | `MVP_SPEC.md` (optional) | `planning/FEATURES.md` (single) **or** `planning/features/<slug>.md` + `planning/features/README.md` (split) |
-| `ux-web` / `ux-app` / `ux-ios` | `MVP_SPEC.md`, `ARCHITECTURE.md`, `CLAUDE.md` (all optional) | `docs/UX.md` |
-| `design` | — | `docs/DESIGN.md` + `~/.claude/design-md-library/<slug>/` |
-| `mockups` | `FEATURES.md` / `features/`*, `docs/UX.md`*, `docs/DESIGN.md`*; reads `docs/mockups/anchor-*.{png,jsx,html}` once Pass 1 is locked | `planning/mockup-briefs/01-anchor-*.md` (Pass 1), `02-*.md` (Pass 2), `03-*-<state>.md` (Pass 3, optional), `README.md` (index) |
-| `gtm` | `MVP_SPEC.md`, `MARKET_RESEARCH.md`, `ARCHITECTURE.md`, `CONVENTIONS.md` | `planning/GTM_STRATEGY.md`, `planning/REVENUE_MODEL.md` |
-| `dispatch-parallel` (utility, off-pipeline) | 2–5 investigation descriptions (CLI args or `--from-file`); args: `--investigation`, `--from-file`, `--surface`, `--force`, `--max` | `.tasks/parallel/<run-id>/investigation-N-result.md` per investigation (≤3k tokens), `SUMMARY.md` (aggregated, with file-overlap detection and severity-tagged recommendations) |
+| `market-analysis` | — | `.arsenal/strategy/MARKET_RESEARCH.md` (unified executive dossier — market + customer + industry structure + Porter's all 5 + conditional PESTLE + SWOT + risks + recommendations), `.arsenal/strategy/RESEARCH_PLAN.md` (working artifact, retained as historical record) |
+| `mvp` | `.arsenal/strategy/MARKET_RESEARCH.md` (optional) | `.arsenal/strategy/MVP_SPEC.md` |
+| `features` | `MVP_SPEC.md` (optional) | `.arsenal/FEATURES.md` (single) **or** `.arsenal/features/<slug>.md` + `.arsenal/features/README.md` (split) |
+| `ux-web` / `ux-app` / `ux-ios` | `MVP_SPEC.md`, `ARCHITECTURE.md`, `CLAUDE.md` (all optional) | `.arsenal/design/UX.md` |
+| `design` | — | `.arsenal/design/DESIGN.md` + `~/.claude/design-md-library/<slug>/` |
+| `mockups` | `FEATURES.md` / `features/`*, `.arsenal/design/UX.md`*, `.arsenal/design/DESIGN.md`*; reads `.arsenal/design/mockups/anchor-*.{png,jsx,html}` once Pass 1 is locked | `.arsenal/strategy/mockup-briefs/01-anchor-*.md` (Pass 1), `02-*.md` (Pass 2), `03-*-<state>.md` (Pass 3, optional), `README.md` (index) |
+| `gtm` | `MVP_SPEC.md`, `MARKET_RESEARCH.md`, `ARCHITECTURE.md`, `CONVENTIONS.md` | `.arsenal/strategy/GTM_STRATEGY.md`, `.arsenal/strategy/REVENUE_MODEL.md` |
+| `dispatch-parallel` (utility, off-pipeline) | 2–5 investigation descriptions (CLI args or `--from-file`); args: `--investigation`, `--from-file`, `--surface`, `--force`, `--max` | `.arsenal/tasks/parallel/<run-id>/investigation-N-result.md` per investigation (≤3k tokens), `SUMMARY.md` (aggregated, with file-overlap detection and severity-tagged recommendations) |
 
 `*` = required. All others soft — skill prompts to run upstream or proceeds with reduced fidelity.
 
@@ -57,14 +57,14 @@ Once planning is complete, downstream execution is handled by [arsenal-build](ht
 
 | Planning artifact | Downstream consumer (arsenal-build) |
 |---|---|
-| `planning/MVP_SPEC.md` | `anchor-files` (optional context), `landing` |
-| `planning/FEATURES.md` / `planning/features/*.md` | `anchor-files` (required), `generate-feature-briefs`, `generate-design-briefs` |
-| `docs/UX.md` | `anchor-files` (required for UI projects), `generate-design-briefs` |
-| `docs/DESIGN.md` | `anchor-files` (required for UI projects) |
-| `planning/mockup-briefs/` | User feeds into Claude Design / Stitch / Open Design / v0; outputs land in `docs/mockups/`, consumed by `arsenal-build:design` |
-| `planning/MARKET_RESEARCH.md` | `landing` (competitive analysis), `gtm` |
+| `.arsenal/strategy/MVP_SPEC.md` | `anchor-files` (optional context), `landing` |
+| `.arsenal/FEATURES.md` / `.arsenal/features/*.md` | `anchor-files` (required), `generate-feature-briefs`, `generate-design-briefs` |
+| `.arsenal/design/UX.md` | `anchor-files` (required for UI projects), `generate-design-briefs` |
+| `.arsenal/design/DESIGN.md` | `anchor-files` (required for UI projects) |
+| `.arsenal/strategy/mockup-briefs/` | User feeds into Claude Design / Stitch / Open Design / v0; outputs land in `.arsenal/design/mockups/`, consumed by `arsenal-build:design` |
+| `.arsenal/strategy/MARKET_RESEARCH.md` | `landing` (competitive analysis), `gtm` |
 
-**Recommended handoff point:** after `mockups` writes briefs and the user has generated mockups into `docs/mockups/`, run `arsenal-build:anchor-files` to consolidate planning into the agent reference layer (CLAUDE.md, ARCHITECTURE.md, CONVENTIONS.md, DESIGN_SYSTEM.md, TASKS.md).
+**Recommended handoff point:** after `mockups` writes briefs and the user has generated mockups into `.arsenal/design/mockups/`, run `arsenal-build:anchor-files` to consolidate planning into the agent reference layer (CLAUDE.md, `.arsenal/ARCHITECTURE.md`, `.arsenal/CONVENTIONS.md`, `.arsenal/design/DESIGN_SYSTEM.md`, `.arsenal/TASKS.md`).
 
 If you don't have arsenal-build installed, planning artifacts remain at canonical paths and can be consumed by any equivalent execution system.
 
@@ -137,37 +137,44 @@ If a skill that should auto-fire is misfiring (or not firing when it should), th
 
 ```
 project-root/
-├── planning/                          # all arsenal-planning output (default; configurable)
-│   ├── MARKET_RESEARCH.md             # market-analysis (unified executive dossier)
-│   ├── RESEARCH_PLAN.md               # market-analysis (working artifact, retained)
-│   ├── MVP_SPEC.md                    # mvp
-│   ├── FEATURES.md                    # features (single mode)
-│   ├── features/                      # features (split mode — alternative)
-│   │   ├── README.md                  # index
-│   │   ├── feature-a.md
-│   │   └── feature-b.md
-│   ├── mockup-briefs/                 # mockups (two-pass anchor briefs)
-│   │   ├── README.md                  # index + workflow + status tracker
-│   │   ├── 01-anchor-<screen>.md      # Pass 1 (1-2 briefs per project)
-│   │   ├── 02-<screen>.md             # Pass 2 derived screens
-│   │   └── 03-<screen>-<state>.md     # Pass 3 state variants (optional)
-│   ├── GTM_STRATEGY.md                # gtm
-│   └── REVENUE_MODEL.md               # gtm
-├── docs/                              # subset written by arsenal-planning (default; configurable)
-│   ├── DESIGN.md                      # design (do-not-edit)
-│   ├── UX.md                          # ux-web / ux-app / ux-ios
-│   ├── ux/                            # optional split — per-page/screen sub-files
-│   │   ├── home.md
-│   │   └── onboarding.md
-│   └── mockups/                       # user-generated from mockups briefs via Claude Design / Stitch / Open Design / v0
-├── .arsenal/
-│   └── config.yaml                    # optional path overrides (see Configuration in README)
-└── .tasks/                            # dispatch-parallel working dir (gitignored)
-    └── parallel/<run-id>/
-        ├── investigation-N-result.md
-        └── SUMMARY.md
+├── CLAUDE.md                              ← stays at root
+└── .arsenal/
+    ├── config.yaml                        ← optional path override
+    ├── ARCHITECTURE.md                    ← project anchor (arsenal-build)
+    ├── CONVENTIONS.md                     ← project anchor (arsenal-build)
+    ├── TASKS.md                           ← project anchor (arsenal-build)
+    ├── FEATURES.md                        ← features (single mode)
+    ├── features/                          ← features (split mode — alternative)
+    │   ├── README.md                      ← index
+    │   ├── feature-a.md
+    │   └── feature-b.md
+    ├── design/                            ← grouped because design pipeline reads as a unit
+    │   ├── UX.md                          ← ux-web / ux-app / ux-ios
+    │   ├── DESIGN.md                      ← design (do-not-edit)
+    │   ├── DESIGN_SYSTEM.md               ← written by arsenal-build
+    │   ├── ux/                            ← optional split — per-page/screen sub-files
+    │   │   ├── home.md
+    │   │   └── onboarding.md
+    │   └── mockups/                       ← user-generated from mockups briefs via Claude Design / Stitch / Open Design / v0
+    ├── tasks/                             ← per-task briefs + ephemera (gitignored)
+    │   ├── phase-N/
+    │   ├── parallel/<run-id>/             ← dispatch-parallel working dir
+    │   │   ├── investigation-N-result.md
+    │   │   └── SUMMARY.md
+    │   └── archive/
+    └── strategy/                          ← user archive; DENIED during build
+        ├── MARKET_RESEARCH.md             ← market-analysis (unified executive dossier)
+        ├── RESEARCH_PLAN.md               ← market-analysis (working artifact, retained)
+        ├── MVP_SPEC.md                    ← mvp
+        ├── mockup-briefs/                 ← mockups (two-pass anchor briefs)
+        │   ├── README.md                  ← index + workflow + status tracker
+        │   ├── 01-anchor-<screen>.md      ← Pass 1 (1-2 briefs per project)
+        │   ├── 02-<screen>.md             ← Pass 2 derived screens
+        │   └── 03-<screen>-<state>.md     ← Pass 3 state variants (optional)
+        ├── GTM_STRATEGY.md                ← gtm
+        └── REVENUE_MODEL.md               ← gtm
 ```
 
 `~/.claude/design-md-library/<slug>/` holds the personal `design` library across projects.
 
-The wrapping directories (`planning/`, `docs/`, `docs/mockups/`, `planning/mockup-briefs/`) are configurable via `.arsenal/config.yaml`. File names are not — `MVP_SPEC.md` is `MVP_SPEC.md` regardless of where its parent directory lives.
+**File names are not configurable.** The artifact contract depends on canonical names; only the wrapping `.arsenal/` directory can be reconfigured via `.arsenal/config.yaml` if absolutely needed (rare).

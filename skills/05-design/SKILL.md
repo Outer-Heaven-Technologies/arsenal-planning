@@ -13,18 +13,19 @@ Produces a `DESIGN.md` file. Three source paths, one personal library.
 
 ## Paths
 
-Tracked artifacts use these default locations (override via `.arsenal/config.yaml` at the project root):
+All arsenal artifacts live under `.arsenal/` at the project root.
 
-| Variable | Default | Holds |
+| What | Path | Notes |
 |---|---|---|
-| `paths.planning` | `planning/` | MARKET_RESEARCH.md, MVP_SPEC.md, FEATURES.md (or features/*.md), GTM_STRATEGY.md, REVENUE_MODEL.md, RESEARCH_PLAN.md |
-| `paths.docs` | `docs/` | UX.md, DESIGN.md, DESIGN_SYSTEM.md, ARCHITECTURE.md, CONVENTIONS.md, TASKS.md |
-| `paths.mockups` | `docs/mockups/` | Mockup files (PNG, HTML, TSX, Figma exports) |
-| `paths.mockup_briefs` | `planning/mockup-briefs/` | Mockup briefs |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MARKET_RESEARCH.md, RESEARCH_PLAN.md, MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
+| Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
+| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Preflight (every run):** before reading or writing a tracked artifact, check for `.arsenal/config.yaml` at the project root. If present, parse `paths.*` and use those values; otherwise use defaults silently — do not prompt the user just to confirm defaults. File names (e.g. `MVP_SPEC.md`) are not configurable; only their wrapping directory is.
+**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
 
-**Consuming an artifact from another skill:** if config (or defaults) point to a location where the expected artifact is missing, ask the user where to find it instead of failing.
+**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
 
 ## Files
 
@@ -248,7 +249,7 @@ Continue to Step 4.
 - **Invention flags:** call out the original choices ("the brass-on-charcoal palette is original — neither ref used it; chosen to match 'warm, prestigious' in the direction")
 - Uncertainty flags where direction was thin and you made a judgment call
 
-**Downstream handoff note.** After the design is saved (Step 5), the next step before `anchor-files` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `planning/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `docs/mockups/`. `arsenal-build:design` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
+**Downstream handoff note.** After the design is saved (Step 5), the next step before `anchor-files` is running `mockups` — it generates two-pass anchor-strategy briefs from `DESIGN.md` + `UX.md` + FEATURES and writes them to `.arsenal/strategy/mockup-briefs/`. The user feeds each brief into Claude Design / Stitch / Open Design / v0, saves outputs to `.arsenal/design/mockups/`. `arsenal-build:design` reads that directory; the visual fidelity gates (especially the iOS simulator-mediated one) are substantially stronger when concrete mockups are present. Mention this in the final report so the user knows to run `mockups` next.
 
 ### Step 5 — Save prompt
 
