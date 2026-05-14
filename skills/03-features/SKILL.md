@@ -68,7 +68,7 @@ One file per feature plus an index. Each feature file contains the full spec for
 
 The default is a suggestion, not a rule — the user picks. Ask once, early, with the count-aware default, then proceed.
 
-**Why split-file mode exists:** With features in separate files, downstream skills (`features-*` (build)) can read only the features relevant to the current phase, never holding the rest in context. Combined with `Read(.arsenal/features/*)` deny rules in `.claude/settings.json`, this gives surgical, intentional access — the controller explicitly opts in to specific feature files during phase expansion. With one big file, deny is binary.
+**Why split-file mode exists:** With features in separate files, downstream skills (`arsenal-build:features` / `arsenal-build-io:features`) can read only the features relevant to the current phase, never holding the rest in context. The v0.2 gating model uses `Read(.arsenal/features/**)` as the baseline deny in `.claude/settings.json`; `arsenal-build:expand-phase` then mutates the deny list per phase to grant access to the in-scope features only (out-of-scope features stay denied by name). With one big `FEATURES.md` file, this granular per-feature gating isn't possible — deny is binary, all-on or all-off.
 
 If a `.arsenal/strategy/MVP_SPEC.md` exists, this skill keeps it consistent with the feature docs as decisions emerge — see the "Auto-Updating MVP_SPEC.md" section below. Works the same regardless of single/split mode.
 
