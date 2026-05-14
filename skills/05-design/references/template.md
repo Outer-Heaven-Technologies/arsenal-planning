@@ -1,430 +1,309 @@
 # DESIGN.md Template
 
-> This template implements the **awesome-design-md** specification — a 9-section DESIGN.md format created by [VoltAgent](https://github.com/VoltAgent/awesome-design-md) (MIT licensed). The format spec, structure, and section conventions are theirs; this guide is original prose explaining how to apply the format inside the `design` skill.
+> This template implements the **Google DESIGN.md format** (Apache 2.0 — [google-labs-code/design.md](https://github.com/google-labs-code/design.md)). The format pairs a YAML token block with markdown prose so coding agents can read the tokens directly while humans read the rationale. Last synced against spec version: **alpha (2026-05-13)**.
 
-Use this exact structure when writing the output `DESIGN.md`. Headings, ordering, and section names are fixed — they match the [getdesign.md / VoltAgent awesome-design-md](https://getdesign.md/) format that AI agents (Stitch, Claude Code, Cursor) expect.
+Use this exact structure when writing the output `DESIGN.md`. Token schema, section names, ordering — all fixed. The file is validated by `npx @google/design.md@latest lint`; outputs that fail lint do not ship.
 
-**Read at least one example file in this same references folder before writing anything.** Each is a real, finished DESIGN.md from the awesome-design-md collection covering a different aesthetic territory. Use whichever is closest to the brand you're extracting as the North Star for voice, depth, and structure. Your output should feel like it could sit next to that file in the same repo.
+---
 
-**The three examples and when to read each:**
+## File anatomy
 
-- **`example-claude.md`** — warm, editorial, quiet. Serif display type, parchment surfaces, single earthy accent. Read this as your **default** North Star; it's also the right primary reference for premium content brands, publishing, AI/research products, and anything that leans "quiet and considered."
-- **`example-apple.md`** — cinematic, minimal, premium consumer. Massive sans-serif display at up to 301 px, pure monochrome sections alternating black and near-white, a single chromatic accent (Apple Blue `#0071e3`) reserved exclusively for interactive elements. Read this when the target brand is consumer hardware, luxury product, or any site that treats photography as the hero and retreats the UI around it.
-- **`example-lamborghini.md`** — loud, luxury, dramatic, maximalist. Dark cinematic surfaces, aggressive display type, high-performance automotive voice. Read this when the target brand is automotive, luxury, bold/editorial, or any site that wants to feel kinetic and high-intensity rather than restrained.
+Every DESIGN.md is two layers stacked top-to-bottom:
 
-You don't need to read all three. Pick the closest match — one, or two if the brand sits between archetypes. If you genuinely can't tell which archetype fits, read `example-claude.md` as the default; its structural discipline is a safe baseline.
+1. **YAML front matter** between two `---` fences — machine-readable design tokens (the normative values).
+2. **Markdown body** — `##` sections of human-readable rationale (the *why* and the *how to apply*).
+
+```md
+---
+version: alpha
+name: <Design system name>
+description: <Optional one-line summary>
+colors:
+  <name>: "<#rrggbb>"
+typography:
+  <name>:
+    fontFamily: <font name>
+    fontSize: <value+unit>
+    fontWeight: <number>
+    lineHeight: <value+unit or unitless multiplier>
+    letterSpacing: <value+unit>
+rounded:
+  <scale>: <value+unit>
+spacing:
+  <scale>: <value+unit or unitless number>
+components:
+  <component-name>:
+    <property>: <value or "{token.path}">
+---
+
+## Overview
+...
+## Colors
+...
+```
+
+The YAML between `---` fences is parsed as the token source of truth. Prose may use descriptive color names (e.g. *"Boston Clay"*); the token name (e.g. `tertiary`) is what agents resolve to.
+
+---
+
+## Top-of-file conventions
+
+The file may begin with an optional `# <Project name>` H1 (not parsed as a section). Sections themselves are `## ` (H2). Do not use H1 inside the body.
+
+---
+
+## Token schema reference
+
+### Primitive types
+
+| Type | Format | Example |
+|---|---|---|
+| **Color** | `#` + hex (sRGB) | `"#1A1C1E"` |
+| **Dimension** | number + unit `px` / `em` / `rem` | `48px`, `1.5rem`, `-0.02em` |
+| **Token reference** | `{path.to.token}` | `{colors.primary}` |
+| **Typography** | object — fields below | (see below) |
+
+### Typography fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `fontFamily` | string | e.g. `"Public Sans"` |
+| `fontSize` | Dimension | e.g. `48px` |
+| `fontWeight` | number | `400` / `500` / `600` / `700` etc. May be quoted or bare in YAML; both equivalent |
+| `lineHeight` | Dimension or unitless number | `24px` or `1.5` (unitless = multiplier of `fontSize`) |
+| `letterSpacing` | Dimension | e.g. `-0.02em` |
+| `fontFeature` | string | maps to CSS `font-feature-settings` |
+| `fontVariation` | string | maps to CSS `font-variation-settings` |
+
+### Token reference rules
+
+- Most groups: refs must point to a **primitive** value (e.g. `{colors.primary}`), not a group (`{colors}`).
+- Inside `components`, refs to **composite values** are allowed (e.g. `{typography.label-md}`).
+- Component property tokens accept: `backgroundColor`, `textColor`, `typography`, `rounded`, `padding`, `size`, `height`, `width`.
+
+---
+
+## Recommended token names (non-normative but conventional)
+
+Following these makes the file portable across agents and tools. Use these when they fit; invent new names when the brand warrants.
+
+- **Colors:** `primary`, `secondary`, `tertiary`, `neutral`, `surface`, `on-surface`, `error`
+- **Typography:** `headline-display`, `headline-lg`, `headline-md`, `body-lg`, `body-md`, `body-sm`, `label-lg`, `label-md`, `label-sm`
+- **Rounded:** `none`, `sm`, `md`, `lg`, `xl`, `full`
+- **Spacing:** `xs`, `sm`, `md`, `lg`, `xl`, `base`, `gutter`, `margin`
+
+---
+
+## Section order (fixed)
+
+Sections must appear in this order when present. Any may be omitted if not relevant. Aliases in parentheses are accepted variants.
+
+| # | Section | Aliases |
+|---|---|---|
+| 1 | Overview | Brand & Style |
+| 2 | Colors | |
+| 3 | Typography | |
+| 4 | Layout | Layout & Spacing |
+| 5 | Elevation & Depth | Elevation |
+| 6 | Shapes | |
+| 7 | Components | |
+| 8 | Do's and Don'ts | |
+
+Unknown sections (e.g. `## Motion`, `## Iconography`) are preserved by spec-compliant consumers but are non-normative.
 
 ---
 
 ## Structural completeness vs. content depth
 
-Two different rules apply to a DESIGN.md, and confusing them is the most common failure mode.
+Two rules apply, and confusing them is the most common failure mode.
 
-**Structural completeness is non-negotiable.** Every DESIGN.md must contain all 9 sections and all subsections marked as required (Distinctive Components in Section 4, all four Section 5 subsections, Shadow Philosophy paragraph in Section 6, Iteration Guide in Section 9, etc.). Skipping a required subsection because the brand "doesn't have much there" is the failure mode — not undershooting a quantity range.
+**Structural completeness is non-negotiable.** Every DESIGN.md that ships through the `design` skill must include sections 1–3 (Overview, Colors, Typography) and at least the `colors.primary` and one typography level token. Sections 4–8 are spec-optional but become required as soon as the brand has anything to say about them — a brand with a flat aesthetic still gets a Section 5 explaining *that fact*; it doesn't get a missing Section 5.
 
-**Quantity guidance flexes with the brand.** Ranges like "12-25 colors", "6-9 do's/don'ts", "12-18 typography rows", "4-6 example prompts" are guidance, not floors. Match the brand's actual depth. A binary blue/white/black brand might genuinely have 9 colors; forcing it to 12 means inventing values. A brand with no shadows might have a one-line Section 6; padding it with a fabricated shadow scale makes the doc worse, not better.
+**Quantity guidance flexes with the brand.** A binary blue/white/black brand might have 6 colors; a maximalist editorial brand might have 25. Match the brand's actual depth — don't pad to hit a number, don't truncate to look tight.
 
-**When a section is genuinely thin, write a one-line prose acknowledgment** — don't omit the section, and don't fabricate content to fill it.
+**When a section is genuinely thin, write a one-paragraph prose acknowledgment** rather than omitting the section.
 
 ```markdown
-## 6. Depth & Elevation
+## Elevation & Depth
 
-Flat design — no shadow system used. Depth is communicated through borders
-(`1px solid #f0eee6`) and color contrast between light and dark sections.
-Do not introduce shadows when working with this design system.
+Flat design — no shadow system. Depth is conveyed through 1px borders
+(`{colors.neutral}`) and surface-color contrast between Sections 2 and
+4 tones. Do not introduce shadows when working with this design system.
 ```
 
-That's a complete, valid Section 6 for a flat-design brand. The skipped element here is *content*, not *structure*.
+That's a valid Section 5 for a flat brand.
 
 ---
 
-## Top of file
+## Section-by-section guidance
+
+### 1. Overview *(also: "Brand & Style")*
+
+Holistic description of look and feel. **2–4 prose paragraphs.** Defines brand personality, target audience, the emotional response the UI should evoke. Often the longest prose section.
+
+The opening paragraph should name the dominant visual move — what a user notices first. Subsequent paragraphs handle typography's role, color's role, and any defining structural quality (layout rhythm, photography style, motion language).
+
+Close with **6–10 single-line Key Characteristics** as a bulleted list that an agent could read as design constraints.
 
 ```markdown
-# Design System Inspired by <Brand>
+## Overview
 
-<One-paragraph synthesis: industry, dominant aesthetic, what makes it distinctive. ~3 sentences. Example: "Apple's website is a masterclass in controlled drama — vast expanses of pure black and near-white serve as cinematic backdrops for products that are photographed as if they were sculptures in a gallery. The design philosophy is reductive to its core: every pixel exists in service of the product, and the interface itself retreats until it becomes invisible.">
-```
+<P1: dominant aesthetic and design philosophy>
 
-No top-level metadata block, no "not an official" disclaimer in the file itself — the getdesign.md site adds those around the markdown. The DESIGN.md starts at Section 1.
+<P2: typography's role>
 
----
-
-## 1. Visual Theme & Atmosphere
-
-**Format**: 2-4 prose paragraphs followed by a "Key Characteristics" bulleted list.
-
-The prose should:
-- Paragraph 1: name the dominant visual move (what you notice first)
-- Paragraph 2: how typography supports the theme
-- Paragraph 3: how color supports the theme
-- (Optional) Paragraph 4: any defining structural quality (layout rhythm, photography style, motion language)
-
-The Key Characteristics list should distill 6-10 single-line, opinionated takeaways that an agent could use as design constraints.
-
-```markdown
-## 1. Visual Theme & Atmosphere
-
-<Paragraph 1: dominant aesthetic and design philosophy>
-
-<Paragraph 2: typography's role>
-
-<Paragraph 3: color story>
+<P3: color story>
 
 **Key Characteristics:**
-- <Specific, distinctive trait — typography, color, layout, or motion>
-- <Another>
+- <Specific, distinctive trait>
 - <Another>
 - ...
 ```
 
----
+### 2. Colors
 
-## 2. Color Palette & Roles
+Required. **Prose first** describing the palette philosophy and the role of each palette (primary, secondary, tertiary, neutral, accents). Then the YAML token block.
 
-**Format**: grouped subsections, NOT one flat table. Group by role family. Each color: bold name, hex/rgba in backticks, then a sentence on its role and why it exists in the system.
-
-Common subsection groupings (use whichever apply to the brand — don't force groups that don't exist, don't omit groups that do):
+Most design systems need at least `primary`, plus 1–4 supporting palettes and a neutral set. Provide as many colors as the brand actually has — typically 6–25.
 
 ```markdown
-## 2. Color Palette & Roles
+## Colors
 
-### Primary
-- **<Color Name>** (`#hex`): <Where it's used + what role it plays in the visual hierarchy>
-- ...
+The palette is rooted in high-contrast neutrals and a single, evocative
+accent color.
 
-### Interactive
-- **<Color Name>** (`#hex`): <CTAs, links, focus states. Note CSS variable name if you found one, e.g. `--sk-focus-color`>
-- ...
-
-### Text
-- **<Color Name>** (`#hex` or `rgba(...)`): <On what background, at what weight>
-- ...
-
-### Surface & Dark Variants
-- **<Color Name>** (`#hex`): <Card backgrounds, elevated surfaces>
-- ...
-
-### Button States
-- **<Color Name>** (`#hex`): <Hover/active/disabled state>
-- ...
-
-### Shadows
-- **<Shadow Name>** (`<full shadow value>`): <When applied>
-
-### Gradient System
-- <Either list the gradient tokens, or write a one-line acknowledgment: "Gradient-free — depth and richness come from surface tone interplay rather than gradients.">
+- **Primary (#1A1C1E):** A deep ink for headlines and core text — maximum readability, sense of permanence.
+- **Secondary (#6C7278):** Sophisticated slate for borders, captions, metadata.
+- **Tertiary (#B8422E):** Boston Clay — the sole driver for interaction.
+- **Neutral (#F7F5F2):** Warm limestone foundation for page backgrounds.
 ```
 
-Notes:
-- Capture rgba opacity values exactly — don't round `rgba(0,0,0,0.48)` to `0.5`
-- If you find CSS custom properties (e.g., `--sk-focus-color`), include them inline
-- Aim for ~10-25 colors. Curate to the system the brand actually uses; don't pad to hit a number, and don't truncate a genuinely rich palette to fit one.
+Token YAML for this section lives in the front matter as the `colors:` map. Use semantic names (`primary`, `secondary`, `tertiary`, `neutral`, `surface`, `on-surface`, `error`) or numeric scales (`primary-10`, `primary-50`, `primary-90`) — both are valid. Pick the convention that fits the system.
 
-**Format check:**
+### 3. Typography
 
-❌ **Bad** (LLM default — flat table):
+Required. **Prose first** describing fonts, weights, and the role of each level. Then YAML.
 
-```
-| Token  | Hex     | Role        |
-|--------|---------|-------------|
-| accent | #c96442 | Primary CTA |
-```
-
-✅ **Good** (grouped prose with named tokens):
-
-```
-**Terracotta Brand** (`#c96442`): The core brand color — a burnt orange-brown
-used for primary CTA buttons, brand moments, and the signature accent.
-Deliberately earthy and un-tech.
-```
-
----
-
-## 3. Typography Rules
-
-**Format**: Font Family subsection, then Hierarchy table, then Principles subsection.
+Most design systems define **9–15 typography levels** across categories like `headline`, `display`, `body`, `label`, `caption`, each with size variants (`sm`, `md`, `lg`).
 
 ```markdown
-## 3. Typography Rules
+## Typography
 
-### Font Family
-- **Display**: `<Font Name>`, with fallbacks: `<system stack>`
-- **Body**: `<Font Name>`, with fallbacks: `<system stack>`
-- <Note any optical sizing rules, e.g. "Display used at 20px+, Text below 19px">
+The typography strategy leverages two distinct weights of **Public Sans**
+for the narrative and **Space Grotesk** for technical data.
 
-### Hierarchy
-
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | <Font> | 56px (3.50rem) | 600 | 1.07 (tight) | -0.28px | <Use case> |
-| Section Heading | <Font> | 40px (2.50rem) | 600 | 1.10 (tight) | normal | <Use case> |
-| ...
-| Body | <Font> | 17px (1.06rem) | 400 | 1.47 | -0.374px | Standard reading text |
-| Caption | <Font> | 14px (0.88rem) | 400 | 1.29 (tight) | -0.224px | <Use case> |
-| Micro | <Font> | 12px (0.75rem) | 400 | 1.33 | -0.12px | <Use case> |
-
-### Principles
-- <Opinionated rule about how this typography system actually works — e.g., "Optical sizing as philosophy: SF Pro automatically switches between Display and Text optical sizes...">
-- <Another>
-- <Another>
-- <Another>
+- **Headlines:** Public Sans Semi-Bold — institutional and trustworthy.
+- **Body:** Public Sans Regular at 16px — contemporary professionalism.
+- **Labels:** Space Grotesk for timestamps and metadata; uppercase with
+  generous letter spacing — evokes digital-stopwatch precision.
 ```
 
-Notes:
-- Include rem values when the source CSS uses rem; px-only is fine when the source is px-only. Don't fabricate unit conversions that aren't in the source.
-- Annotate tight line-heights with `(tight)` and relaxed ones with `(relaxed)`
-- Aim for 12-18 rows in the hierarchy table — capture the full scale, not just headlines. Brands with thinner type systems may have fewer; that's fine.
-- Use `normal` for letter-spacing when the source doesn't apply tracking. The column should always exist even if most rows are `normal`.
-- The Principles section is required and is where you call out the opinionated, distinctive rules (negative tracking universally, weight restraint, optical sizing, etc.)
+YAML schema reminder:
 
----
-
-## 4. Component Stylings
-
-**Format**: each component named with a bold descriptor (not generic). Properties as bullets. End with a "Distinctive Components" subsection for site-signature patterns. **Distinctive Components is required** — even brands with mostly-standard components have *something* that makes them recognizable. If you genuinely can't find one, write "No distinctive components beyond standard buttons/cards" and explain why.
-
-```markdown
-## 4. Component Stylings
-
-### Buttons
-
-**<Site-specific button name, e.g. "Primary Blue (CTA)" or "Pill Link (Learn More / Shop)">**
-- Background: `<value>`
-- Text: `<color>`
-- Padding: `<value>`
-- Radius: `<value>`
-- Border: `<value>`
-- Font: `<font>, <size>, weight <n>`
-- Hover: `<state change>`
-- Active: `<state change>`
-- Focus: `<state change>`
-- Use: <When this variant appears>
-
-**<Next button variant>**
-- ...
-
-### Cards & Containers
-- Background: `<value>`
-- Border: `<value or 'none'>`
-- Radius: `<value>`
-- Shadow: `<value or 'none'>`
-- Content: <padding, alignment>
-- Hover: <state>
-
-### Navigation
-- Background: `<value, including any backdrop-filter>`
-- Height: `<value>`
-- Text: `<color, size, weight>`
-- Active state: `<treatment>`
-- Mobile behavior: <how it collapses>
-
-### Image Treatment
-- <How images are handled — solid color fields, full-bleed, rounded containers, lifestyle vs product photography>
-
-### Distinctive Components
-
-**<Pattern unique to this site, e.g. "Product Hero Module">**
-- <Description with specific values>
-
-**<Another distinctive pattern>**
-- ...
+```yaml
+typography:
+  headline-lg:
+    fontFamily: Public Sans
+    fontSize: 48px
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: -0.02em
+  body-md:
+    fontFamily: Public Sans
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.6
+  label-caps:
+    fontFamily: Space Grotesk
+    fontSize: 12px
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: 0.1em
 ```
 
-Notes:
-- Use the site's actual button names where possible ("Pill Link", not "Tertiary Button")
-- The Distinctive Components subsection is the most valuable — it captures patterns that make the site recognizable
+### 4. Layout *(also: "Layout & Spacing")*
 
----
+Describes the layout model (grid vs. flex vs. dynamic margins) and the spacing scale. Typically **1–2 prose paragraphs** plus a token block.
 
-## 5. Layout Principles
+Spacing tokens go under the `spacing:` map in YAML — usually 5–8 scale steps plus named values for `gutter` and `margin` if a grid is in use.
 
-**Format**: Four required subsections — Spacing System, Grid & Container, Whitespace Philosophy, Border Radius Scale. All four must appear, even if one is brief.
+### 5. Elevation & Depth *(also: "Elevation")*
+
+How visual hierarchy is conveyed. **1–2 paragraphs.** If shadows are used, define their spread/blur/color philosophy. If the system is flat, say so explicitly and name the alternative depth signals (borders, color contrast, surface tonality).
+
+This section has no required token block — but if the system uses elevation tokens, they may be defined here as a non-normative extension.
+
+### 6. Shapes
+
+Describes how visual elements are shaped — corner radii, lozenge vs. capsule vs. rectangle conventions. **1–2 paragraphs** plus `rounded:` token block in YAML.
+
+```yaml
+rounded:
+  none: 0px
+  sm: 4px
+  md: 8px
+  lg: 12px
+  full: 9999px
+```
+
+### 7. Components
+
+Style guidance for atomic components — buttons, chips, lists, tooltips, checkboxes, radios, inputs, etc. Cover at least primary/secondary/tertiary button variants plus inputs.
+
+**Prose per component**, followed by the YAML `components:` map. Each component is a sub-map of property tokens.
+
+```yaml
+components:
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.neutral}"
+    rounded: "{rounded.md}"
+    padding: 12px
+    typography: "{typography.label-md}"
+  button-primary-hover:
+    backgroundColor: "{colors.primary-70}"
+  button-secondary:
+    backgroundColor: transparent
+    textColor: "{colors.primary}"
+    rounded: "{rounded.md}"
+    padding: 12px
+```
+
+**Variants** for interaction states (hover, pressed, active, disabled) use sibling token names: `button-primary` + `button-primary-hover` + `button-primary-active`, etc.
+
+Component property tokens accepted by the spec: `backgroundColor`, `textColor`, `typography`, `rounded`, `padding`, `size`, `height`, `width`.
+
+### 8. Do's and Don'ts
+
+Practical guardrails. **6–10 bulleted rules** — concrete enough that an agent can check its work against them.
 
 ```markdown
-## 5. Layout Principles
+## Do's and Don'ts
 
-### Spacing System
-- Base unit: <value>
-- Scale: <comma-separated values>
-- <Notable characteristic about the scale — e.g., "dense at small sizes with granular 1px increments, then jumps in larger steps">
-
-### Grid & Container
-- Max content width: <value>
-- Hero: <treatment>
-- Product/content grids: <column behavior>
-- <Other layout patterns>
-
-### Whitespace Philosophy
-- <Opinionated principle — e.g., "Cinematic breathing room: each section occupies a full viewport height...">
-- <Another>
-- <Another>
-
-### Border Radius Scale
-- Micro (<value>): <use>
-- Standard (<value>): <use>
-- Comfortable (<value>): <use>
-- Large (<value>): <use>
-- Full Pill (<value>): <use>
-- Circle (50%): <use, if applicable>
+- Do use the primary color for the single most important action per screen
+- Do maintain WCAG AA contrast (4.5:1 for normal text)
+- Don't mix rounded and sharp corners in the same view
+- Don't use more than two font weights on a single screen
+- Don't introduce gradients — this brand is flat by design
+- Do reserve the tertiary color for interaction; never decoration
 ```
 
 ---
 
-## 6. Depth & Elevation
+## Validation
 
-**Format**: Levels table, then Shadow Philosophy paragraph (required), then Decorative Depth subsection.
+Every DESIGN.md produced by the `design` skill is linted before being promoted to the library:
 
-```markdown
-## 6. Depth & Elevation
-
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Flat (Level 0) | No shadow, solid background | <Use> |
-| <Named level> | <Full CSS treatment> | <Use> |
-| Subtle Lift (Level 1) | `<full shadow value>` | <Use> |
-| Focus (Accessibility) | `<focus ring value>` | Keyboard focus on all interactive elements |
-
-**Shadow Philosophy**: <1-2 sentences on how this site uses shadow. Be opinionated — does it use one shadow style? Many? None? Why does the choice fit the brand?>
-
-### Decorative Depth
-- <How depth is communicated beyond shadows — color contrast, glass effects, layered photography, etc.>
-- <Another>
+```bash
+npx @google/design.md@latest lint <path-to-DESIGN.md>
 ```
 
-If the site is genuinely flat, replace the table and Shadow Philosophy with the prose acknowledgment shown in "Structural completeness vs. content depth" at the top of this file. Don't fabricate a shadow system. The Decorative Depth subsection still applies and should explain how depth is communicated without shadows.
+Errors block promotion. Warnings (e.g. WCAG contrast, soft-deprecated patterns) are surfaced for user review.
+
+If lint fails with version-mismatch errors (e.g. our template uses `version: alpha` but the spec has moved on), update this `template.md` and `example-claude.md` against the upstream repo (`https://github.com/google-labs-code/design.md`) and re-emit.
 
 ---
 
-## 7. Do's and Don'ts
+## Worked-example pointer
 
-**Format**: two bulleted lists, each opinionated and site-specific.
-
-```markdown
-## 7. Do's and Don'ts
-
-### Do
-- <Specific, opinionated guideline rooted in the brand's distinctive choices>
-- <Another>
-- <Another>
-- ... (aim for 6-10)
-
-### Don't
-- <Specific anti-pattern that would break the brand>
-- <Another>
-- <Another>
-- ... (aim for 6-10)
-```
-
-Quality test: every Do/Don't should be specific enough that a generic site couldn't claim it. "Use consistent spacing" is useless. "Use 980px pill radius for CTA links — the signature Apple link shape" is the bar.
-
----
-
-## 8. Responsive Behavior
-
-**Format**: Breakpoints table (granular), then Touch Targets, Collapsing Strategy, Image Behavior subsections — all four required.
-
-```markdown
-## 8. Responsive Behavior
-
-### Breakpoints
-
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Small Mobile | <360px | Minimum supported, single column |
-| Mobile | 360-480px | Standard mobile layout |
-| Mobile Large | 480-640px | <Changes> |
-| Tablet Small | 640-834px | <Changes> |
-| Tablet | 834-1024px | <Changes> |
-| Desktop Small | 1024-1070px | <Changes> |
-| Desktop | 1070-1440px | <Changes> |
-| Large Desktop | >1440px | <Changes> |
-
-### Touch Targets
-- <Minimum sizes for primary CTAs, nav, controls>
-
-### Collapsing Strategy
-- <How headlines scale: e.g. "56px Display → 40px → 28px on mobile, maintaining tight line-height proportionally">
-- <How grids collapse>
-- <How nav collapses>
-- <What stays full-width / full-bleed>
-
-### Image Behavior
-- <Aspect ratio rules>
-- <Cropping/scaling at breakpoints>
-- <Lazy loading patterns>
-```
-
-Aim for 5-8 breakpoints in the table. Real sites have more granular breakpoint systems than the standard sm/md/lg/xl, but 5 is a reasonable floor when a brand only ships 5.
-
----
-
-## 9. Agent Prompt Guide
-
-**Format**: Quick Color Reference list, Example Component Prompts (4-6 of them), then a numbered Iteration Guide. **The Iteration Guide is required** — a DESIGN.md without it is a design doc; a DESIGN.md *with* it is a tool.
-
-```markdown
-## 9. Agent Prompt Guide
-
-### Quick Color Reference
-- Primary CTA: <name + hex>
-- Page background (light): `<hex>`
-- Page background (dark): `<hex>`
-- Heading text (light): `<hex>`
-- Heading text (dark): `<hex>`
-- Body text: `<value>` on light, `<value>` on dark
-- Link (light bg): `<hex>`
-- Link (dark bg): `<hex>`
-- Focus ring: `<hex>`
-- Card shadow: `<full value>`
-
-### Example Component Prompts
-- "<Full prompt for a hero section, with every spec inline — bg color, headline font/size/weight/tracking/line-height, subtitle specs, CTA specs>"
-- "<Full prompt for a product/feature card with every spec inline>"
-- "<Full prompt for the navigation pattern>"
-- "<Full prompt for a distinctive layout pattern unique to this site>"
-- "<Full prompt for a signature component like a 'Learn more' link or pill CTA>"
-
-### Iteration Guide
-1. <First non-negotiable rule — e.g., "Every interactive element gets <accent color> — no other accent colors">
-2. <Second rule — typically a section/layout pattern>
-3. <Third rule — typography behavior>
-4. <Fourth rule — distinctive treatment>
-5. <Fifth rule — what makes the brand recognizable>
-6. <Sixth rule — what to avoid>
-7. <Seventh rule — depth/elevation>
-8. <Eighth rule — a signature shape or component>
-```
-
-The Iteration Guide is the most valuable part for agents. Every numbered point should be a hard, unambiguous rule that an agent can follow without judgment calls.
-
----
-
-## Field-level guidance
-
-### What "good" looks like
-A reviewer should be able to hand this DESIGN.md to a coding agent and get UI that's recognizably <Brand>-derivative — not generic. Test by reading just Section 9 (Agent Prompt Guide) and asking: "Could I build this without seeing the source?"
-
-### What "bad" looks like
-- Section 1 as bullets only, no prose (the prose is where the design philosophy actually lives)
-- Section 2 as one flat table instead of grouped subsections
-- Generic component names ("Primary Button") instead of site-specific ones ("Pill Link", "Media Control")
-- Skipping required subsections (Distinctive Components, Shadow Philosophy, Iteration Guide, the four Section 5 subsections, the four Section 8 subsections) because the brand "doesn't have much there"
-- Padding thin sections with fabricated content to hit quantity ranges
-- Only 3-4 breakpoints when the site clearly has more
-- Section 9 missing the Iteration Guide
-- Vague mood words without supporting tokens
-- Inventing values you didn't actually find in the source
-- Inventing rem conversions when the source uses px-only
-
-### How to handle uncertainty
-If you can't determine a value with confidence, mark it explicitly:
-
-```markdown
-- Hover state: **[inferred]** `#0059C7` (10% darker variant — couldn't isolate hover CSS rule)
-```
-
-Better to flag inference than ship a confident guess.
-
-### Length expectations
-A complete DESIGN.md typically runs 200-400 lines depending on brand depth. The Claude example is ~290 lines; thinner brands run shorter. If you're writing under 150 you're probably skipping required subsections. If you're writing over 500 you're padding.
+Read `references/example-claude.md` alongside this template before writing. The example demonstrates appropriate section depth, token granularity, and prose voice. Reproduce the *care* and *specificity*, not the aesthetic — different brands warrant very different aesthetic registers.

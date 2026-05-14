@@ -190,8 +190,8 @@ Write `.arsenal/strategy/MVP_SPEC.md` using the template below. The spec reflect
 [If `.arsenal/strategy/MARKET_RESEARCH.md` was the source for this spec, reference it here: "Grounded in `.arsenal/strategy/MARKET_RESEARCH.md` — see §X for [topic]". Otherwise note "Spec drafted from intake + lightweight research" or "Spec drafted from intake only — recommend running `/arsenal-planning:market-analysis` before significant investment".]
 
 ## Next Step
-→ For UI projects: `/arsenal-planning:features` to drill each MVP feature, then `ux-{web,app,ios}` → `design` → `mockups` → `anchor-files` → per-phase build pipelines.
-→ For non-UI projects (CLI, library, API, server-only): skip ux-* and design, go `/arsenal-planning:features` → `anchor-files` directly.
+→ For UI projects: `/arsenal-planning:features` to drill each MVP feature, then `ux-{web,app,ios}` → `design` → `mockups` → `/arsenal-build:anchor-files` → per-phase build pipelines.
+→ For non-UI projects (CLI, library, API, server-only): skip ux-* and design, go `/arsenal-planning:features` → `/arsenal-build:anchor-files` directly.
 ```
 
 ### Step 5: Review & Recommendation

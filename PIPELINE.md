@@ -127,8 +127,8 @@ Auto-fire on natural language matching their description:
 - `ux-app` — fires on "plan the app UX", "scaffold the dashboard", "what screens does this app need"
 - `ux-ios` — fires on "plan the iOS UX", "scaffold the iPhone app", "design the onboarding flow", "plan the paywall"
 - `market-analysis` — fires on "research the market for X", "do a competitive analysis for Y", "validate this market", "build me a market dossier", "executive research on Z", "should I enter this space"
-- `design` — fires on "get me Shopify", "extract design from <url>", "inspired by X"
-- `mockups` — fires on "generate mockup briefs", "prepare mockups", "draft mockup prompts", "I need mockups"
+- `design` — fires on "get me Shopify", "make a DESIGN.md like <Brand>", "extract design from <url>", "inspired by X", "design that feels like X meets Y"
+- `mockups` — fires on "generate mockup briefs", "prepare mockups", "draft mockup prompts", "script mockups", "set up mockup generation", "write mockup prompts", "I need mockups"
 - `dispatch-parallel` — fires on "investigate these in parallel", "fan out on these issues", "run these checks concurrently", "audit X, Y, and Z separately"
 
 If a skill that should auto-fire is misfiring (or not firing when it should), the description in `SKILL.md` is the lever.

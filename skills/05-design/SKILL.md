@@ -1,13 +1,15 @@
 ---
 name: design
-description: Produces a `DESIGN.md` brand spec via three paths — fetch from the getdesign.md catalog (verbatim), extract faithfully from URLs, or invent from written direction with optional refs. Maintains a personal library at `~/.claude/design-md-library/`. Use when the user wants design tokens, a brand spec, or a DESIGN.md for a known brand or original aesthetic.
+description: Produces a `DESIGN.md` brand spec via three paths — fetch from the getdesign.md catalog (verbatim), extract faithfully from URLs, or invent from written direction with optional refs. Maintains a personal library at `~/.claude/design-md-library/`. Auto-fires on "get me Shopify", "make a DESIGN.md like [Brand]", "extract design from [url]", "inspired by X", "design that feels like X meets Y". Use when the user wants design tokens, a brand spec, or a DESIGN.md for a known brand or original aesthetic.
 ---
 
 # Plan Design
 
-Produces a `DESIGN.md` file. Three source paths, one personal library.
+Produces a `DESIGN.md` file in the **[Google DESIGN.md format](https://github.com/google-labs-code/design.md)** (Apache 2.0) — YAML front matter holding machine-readable design tokens, plus a markdown body of 8 structured sections. Three source paths, one personal library, one lint gate.
 
-**Core principle — verbatim for existing sources, faithful for extracts, original for inspiration.** If the DESIGN.md already exists (personal library OR getdesign.md catalog), copy it byte-for-byte. Never paraphrase, restructure, re-title, or reformat. Path B produces faithful new writing extracted from real URLs. Path C produces original new writing influenced by refs but not reproducing them.
+**Output format is fixed.** Every DESIGN.md this skill ships is valid Google DESIGN.md — verified by `npx @google/design.md@latest lint` before promotion to the library. The lint gate is mandatory, not optional. Files that fail lint do not get saved.
+
+**Core principle — faithful for sources, original for inspiration.** Path A fetches a known brand from the getdesign.md catalog and **transforms** it from VoltAgent's 9-section format into Google's 8-section + YAML format (the catalog's content is canonical brand truth; we normalize the shape). Path B produces faithful new writing extracted from real URLs. Path C produces original new writing influenced by refs but not reproducing them.
 
 **The B-vs-C line.** Path B reproduces existing designs faithfully (single or multi-URL — refs ARE the source). Path C creates new designs using refs (URLs, words, archetypes) as inspiration — refs INFORM the source, they don't become it. If the user provides any written direction, or uses blend language ("X meets Y", "inspired by X but Z"), it's C. Pure URLs with faithful intent ("extract these", "looks like these") is B.
 
@@ -29,13 +31,13 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 ## Files
 
-- `SKILL.md` — this file. Orchestration logic: when to fetch, where to save, how to handle paths.
-- `references/template.md` — canonical 9-section DESIGN.md structure with field-level guidance. Owns format. Read by Path B before extraction and Path C before invention.
-- `references/example-claude.md` — warm / editorial / quiet North Star example. Serif, parchment, earthy accent. The voice + depth reference for Path B (extracts) and Path C (inspiration). Read alongside `template.md` whenever writing a new DESIGN.md.
+- `SKILL.md` — this file. Orchestration logic: when to fetch, where to save, how to handle paths, when to lint.
+- `references/template.md` — canonical Google DESIGN.md structure: YAML front matter schema + 8-section body + token reference syntax. Owns format. Read by Path A (for the transformation target shape), Path B (extraction), and Path C (invention).
+- `references/example-claude.md` — warm / editorial / quiet North Star example, in valid Google DESIGN.md format. The voice + depth + token-granularity reference. Read alongside `template.md` whenever writing a new DESIGN.md.
 
-**Hierarchy of authority for DESIGN.md content:** `template.md` owns *structure* (section names, ordering, format, required subsections). `example-claude.md` owns *voice* (tone, depth, specificity) as the reference example. SKILL.md owns *workflow* (this file). When SKILL.md and template.md appear to disagree on structural details, template.md wins.
+**Hierarchy of authority for DESIGN.md content:** `template.md` owns *structure* (token schema, section names, ordering, required fields). `example-claude.md` owns *voice + token granularity* (tone, depth, specificity, how many colors/typography levels/components a real design warrants). SKILL.md owns *workflow* (this file). When SKILL.md and template.md appear to disagree on structural details, template.md wins. When both disagree with the upstream `google-labs-code/design.md` spec, the spec wins — update template.md against it.
 
-**Example use:** Path B and Path C read `template.md` + `example-claude.md` together. The example sets the bar for how deep and specific each section should be. Don't reproduce the example's aesthetic — reproduce its *care*. Brand archetypes that diverge sharply from claude's warm/editorial register (loud/luxury, brutalist, cinematic-minimal) still benefit from the example's section depth even if the voice differs.
+**Example use:** All three paths read `template.md` + `example-claude.md` together. The example sets the bar for how deep and specific each section should be, and how to use both conventional semantic token names (`primary`, `secondary`) and brand-specific descriptive tokens (`terracotta`, `parchment`) in the same file. Don't reproduce the example's aesthetic — reproduce its *care*. Brand archetypes that diverge sharply from claude's warm/editorial register (loud/luxury, brutalist, cinematic-minimal) still benefit from the example's structural discipline even if the voice differs.
 
 ## Resolution flow
 
@@ -84,9 +86,9 @@ Parse the user's request to decide between catalog (Path A), fresh extract (Path
 
 **Decision rule when overlap is possible:** if any written direction is present, or any blend/inspiration language appears, route to C. Pure URLs with faithful intent route to B. When a single message contains both faithful and inspirational signals, ask once.
 
-### Step 3a — Catalog path (getdesign.md, fetched verbatim from unpkg)
+### Step 3a — Catalog path (getdesign.md source → Google DESIGN.md output)
 
-The getdesign.md catalog is published as an npm package (`getdesign`) whose raw template files live on unpkg. This is the authoritative source. Fetch it and write it **byte-for-byte** to a temporary staging path. Do not paraphrase. Do not re-title. Do not restructure. Do not add a "source footer" or your own framing. If the file has awkward wording, that is the canonical form — leave it and don't editorialize.
+The getdesign.md catalog (`getdesign` npm package, raw templates on unpkg) is the authoritative source for known brands. Catalog files are in **VoltAgent's 9-section format** (MIT, © VoltAgent). Path A fetches the source, then **transforms** it into Google's 8-section + YAML format so the output integrates with the rest of the pipeline (lint, token references, anchor-files DESIGN_SYSTEM.md derivation downstream).
 
 **Do NOT scrape `getdesign.md/<slug>/design-md` for content.** That page is React-rendered and forces reconstruction. Always fetch the raw `.md` from unpkg. (Static preview pages at `getdesign.md/design-md/<brand>/preview[-dark]` are fine — they're not React-hydrated.)
 
@@ -100,24 +102,43 @@ Parse the JSON. Match the user's brand to the closest entry by the `brand` field
 
 If there's no match, tell the user: "<Brand> isn't in the getdesign.md catalog. Want me to extract fresh from <brand>.com instead?" If yes, switch to Path B. If no, stop.
 
-If curl fails (network, unpkg outage, proxy), fall back to `firecrawl_scrape(url=..., formats=["rawHtml"])` and parse the `rawHtml` field as JSON. **Verify the fallback output is raw JSON, not wrapped or HTML-escaped** — if Firecrawl wraps the content (e.g., in `<pre>` tags or escapes `<` and `>`), strip the wrapper before parsing. Same rule applies to every Firecrawl fallback in this skill. If Firecrawl tools aren't loaded, call `tool_search` with query `"firecrawl scrape"`. If Firecrawl isn't installed, call `suggest_connectors`.
+If curl fails (network, unpkg outage, proxy), fall back to `firecrawl_scrape(url=..., formats=["rawHtml"])` and parse the `rawHtml` field as JSON. Verify the fallback output is raw JSON, not wrapped or HTML-escaped — if Firecrawl wraps the content, strip the wrapper before parsing. If Firecrawl tools aren't loaded, call `tool_search` with query `"firecrawl scrape"`.
 
-**Step 2: Fetch the DESIGN.md and previews.** All three files are static — curl is canonical.
+**Step 2: Fetch the source DESIGN.md and previews.**
 
 ```
-mkdir -p /tmp/design/<brand>
-curl -fsSL https://unpkg.com/getdesign@latest/templates/<file>          -o /tmp/design/<brand>/DESIGN.md
-curl -fsSL https://getdesign.md/design-md/<brand>/preview               -o /tmp/design/<brand>/preview.html      || true
-curl -fsSL https://getdesign.md/design-md/<brand>/preview-dark          -o /tmp/design/<brand>/preview-dark.html || true
+mkdir -p /tmp/design/<brand>/source
+curl -fsSL https://unpkg.com/getdesign@latest/templates/<file>  -o /tmp/design/<brand>/source/voltagent.md
+curl -fsSL https://getdesign.md/design-md/<brand>/preview       -o /tmp/design/<brand>/preview.html      || true
+curl -fsSL https://getdesign.md/design-md/<brand>/preview-dark  -o /tmp/design/<brand>/preview-dark.html || true
 ```
 
-The `|| true` guards on the previews ensure a missing dark variant never aborts the run. The DESIGN.md fetch must succeed.
+The VoltAgent-format source is kept verbatim at `source/voltagent.md` for reference and audit. Previews are catalog-authoritative — fetched as-is from getdesign.md (they reflect the brand's actual visual identity; never regenerate them for Path A).
 
-If curl fails on any fetch, fall back to `firecrawl_scrape(url=..., formats=["rawHtml"])` and write the `rawHtml` field byte-for-byte. **Verify the fallback output is raw markdown / raw HTML, not wrapped or escaped** — if Firecrawl wraps the content (e.g., in `<pre>` tags or HTML-escapes `<` and `>`), strip the wrapper before saving. Verbatim fidelity is the whole point of Path A.
+**Step 3: Transform VoltAgent source → Google format DESIGN.md.**
 
-Continue to Step 4.
+Read `references/template.md` and `references/example-claude.md` first so the transformation target is fresh in mind. Then process the VoltAgent source section-by-section:
 
-### Step 3b — Extract path (Firecrawl + 9-section template)
+| VoltAgent (source) | Google (output) | Transformation |
+|---|---|---|
+| § 1 Visual Theme & Atmosphere | `## Overview` | Direct: prose paragraphs + Key Characteristics list, structurally unchanged |
+| § 2 Color Palette & Roles | YAML `colors:` + `## Colors` prose | Extract every hex value into the YAML map (preserve evocative names as token keys; add Google-conventional aliases `primary`/`secondary`/`tertiary`/`neutral`/`surface`/`on-surface`/`error` where the role is clear). Restate the palette prose in `## Colors` with `{token.references}` inline |
+| § 3 Typography Rules | YAML `typography:` + `## Typography` prose | Each row of the source's typography table becomes a typography token in YAML (`fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing` per the spec). Restate principles in `## Typography` prose |
+| § 4 Component Stylings | YAML `components:` + `## Components` prose | Each named button/card/input variant becomes a `components.<name>` entry. Use `{token.references}` for token-derived values. Use `-hover`, `-active` sibling token names for interaction-state variants |
+| § 5 Layout Principles (spacing scale) | YAML `spacing:` + `## Layout` prose | Extract the spacing scale into YAML; restate layout philosophy in `## Layout` prose |
+| § 5 Layout Principles (border radius scale) | YAML `rounded:` + `## Shapes` prose | Extract radius scale into YAML; describe the named-scale system in `## Shapes` |
+| § 6 Depth & Elevation | `## Elevation & Depth` | Direct — typically no YAML tokens, just prose |
+| § 7 Do's and Don'ts | `## Do's and Don'ts` | Direct — bullet list, preserve brand-specific guidance verbatim |
+
+Drop these from output (VoltAgent-specific, no Google equivalent):
+- Section 4's "Iconography" subsection if present — fold into Components prose if site-distinctive, otherwise drop
+- Section 9 "Iteration Guide" — superseded by `npx @google/design.md@latest lint`/`diff` tooling
+
+Save the transformed result to `/tmp/design/<brand>/DESIGN.md`.
+
+Continue to Step 4 (lint runs there before the report).
+
+### Step 3b — Extract path (Firecrawl + Google DESIGN.md template)
 
 Path B accepts one or more URLs. For each URL, run `firecrawl_scrape` with the parameters below. These parameters are tuned for design extraction — don't strip them.
 
@@ -147,7 +168,13 @@ Use `firecrawl_scrape` specifically — not `firecrawl_extract` (it returns LLM-
 
 Cross-reference parsed CSS values against the screenshot. If a color appears dominant visually but rare in CSS, it's probably a gradient or image — note it anyway.
 
-**Write the DESIGN.md following `references/template.md`.** template.md owns the 9-section structure, required subsections, format conventions, and quantity guidance. Don't reproduce its rules from memory — read it. Read `references/example-claude.md` alongside it as the North Star for voice and depth.
+**Write the DESIGN.md following `references/template.md`.** template.md owns the Google format (YAML schema + 8 sections + token reference syntax) and quantity guidance. Don't reproduce its rules from memory — read it. Read `references/example-claude.md` alongside it as the North Star for voice, depth, and token granularity. The output must:
+
+1. Start with bare YAML front matter between `---` fences (no code-fence wrapping).
+2. Define `colors`, `typography`, and at least the `colors.primary` token. Other token groups (`rounded`, `spacing`, `components`) appear if the brand warrants them.
+3. Use both **Google-conventional semantic names** (`primary`, `secondary`, `tertiary`, `neutral`, `surface`, `on-surface`, `error`) AND **brand-specific descriptive names** (`terracotta`, `parchment`, etc.) as token keys — the same value can have multiple keys. See `example-claude.md` for the pattern.
+4. Use `{path.to.token}` references in prose and in component property values where the brand has consistent role-to-token mapping.
+5. Emit all 8 sections in order: Overview, Colors, Typography, Layout, Elevation & Depth, Shapes, Components, Do's and Don'ts.
 
 **Multi-URL synthesis rules.** When more than one URL was scraped, follow these rules instead of averaging:
 
@@ -188,9 +215,9 @@ firecrawl_scrape(
 
 But treat outputs as *mood references*, not extraction sources. You're noting atmosphere, color philosophy, and one or two distinctive moves per ref — not extracting tokens to reproduce. If you find yourself copying a hex value from a ref unchanged, you've slipped into Path B territory; either shift the value to match the direction or call out that you're echoing a ref deliberately.
 
-**Step 3 — pick example(s).** Read `references/template.md`. Read the closest-match example file for the direction's primary voice. If the direction explicitly mixes archetypes, read two — see "Path C example selection" above.
+**Step 3 — read references.** Read `references/template.md` (Google format + token schema) and `references/example-claude.md` (voice + depth + token-granularity reference).
 
-**Step 4 — write the DESIGN.md.** Follow `references/template.md`'s 9-section structure. Two extra requirements unique to Path C:
+**Step 4 — write the DESIGN.md.** Follow Google DESIGN.md format per `references/template.md` (YAML front matter + 8 sections + token references). Two extra requirements unique to Path C:
 
 1. **Add an "Influences" subsection at the top of Section 1 (Atmosphere).** Format:
 
@@ -219,18 +246,39 @@ Save to `/tmp/design/<slug>/DESIGN.md`.
 
 Continue to Step 4.
 
-### Step 4 — Deliver and report
+### Step 4 — Lint, then deliver and report
 
-**For Path A (catalog hits):** keep the report minimal. The user asked for a known brand and got that brand verbatim — no editorial framing needed.
+**Step 4a — Lint gate (mandatory, all paths).** Before producing the report or offering the save prompt, run lint against the staged DESIGN.md:
+
+```bash
+npx @google/design.md@latest lint /tmp/design/<slug>/DESIGN.md
+```
+
+The CLI outputs JSON with `findings` and a `summary`. Three cases:
+
+| `summary.errors` | What it means | Action |
+|---|---|---|
+| `> 0` | Hard fail — the DESIGN.md is structurally invalid | **Stop. Do not advance to Step 4b.** Surface the errors to the user verbatim, explain that promotion is blocked, and offer to fix-and-re-emit. For Path A, an error usually means the source-to-Google transformation lost or malformed a token; re-do that section. |
+| `0`, `warnings > 0` | Soft fail — surface for triage | Include warnings in the Step 4b report so the user can decide whether they're acceptable. Common warnings: WCAG contrast below AA, missing recommended sections. Promotion proceeds unless the user objects. |
+| `0`, `warnings == 0` (info only) | Pass | Proceed silently to Step 4b. |
+
+If `npx @google/design.md@latest` fails to install (network, registry, Node version mismatch), surface the error and fall back to "structural sanity check only" — re-read the DESIGN.md, verify the YAML parses, verify all 8 sections are present (or explicitly omitted), verify token references resolve. Do not silently skip the gate.
+
+**Step 4b — Report.**
+
+**For Path A (catalog hits):** keep the report minimal. The user asked for a known brand and got that brand transformed into Google format — no editorial framing needed.
 
 - Staging directory path (`/tmp/design/<brand>/`)
-- Files present: `DESIGN.md`, `preview.html`, `preview-dark.html` (when present)
+- Files present: `DESIGN.md` (transformed), `source/voltagent.md` (original kept for reference), `preview.html`, `preview-dark.html` (catalog-authoritative, when present)
+- Lint result summary (errors: 0, warnings: N, infos: N)
+- Notable transformations from the source (e.g., "merged Section 4's Iconography subsection into Components prose", "extracted 21 colors into YAML")
 - Recommend: "Open `/tmp/design/<brand>/preview.html` in your browser to see the design rendered before you decide to save."
 
 **For Path B (fresh extracts):** report what the skill produced and where its judgment was involved.
 
 - Staging directory path (`/tmp/design/<slug>/`)
 - Files present: `DESIGN.md`, `preview.html`, `preview-dark.html` (when generated)
+- Lint result summary (errors: 0, warnings: N, infos: N)
 - 3–5 bullet aesthetic summary ("warm parchment canvas, terracotta accent, serif headlines at weight 500, ring-shadow depth system")
 - Uncertainty flags ("couldn't isolate hover state for primary button — used inferred 10% darker variant; flagged in the doc")
 - For multi-URL extracts: which URL contributed which sections, and any cross-surface conflicts noted inline
@@ -239,6 +287,7 @@ Continue to Step 4.
 
 - Staging directory path (`/tmp/design/<slug>/`)
 - Files present: `DESIGN.md`, `preview.html`, `preview-dark.html` (when generated)
+- Lint result summary (errors: 0, warnings: N, infos: N)
 - 3–5 bullet aesthetic summary, same shape as Path B
 - **Influence map:** one line per ref, what it contributed (matches the Influences section in the doc)
 - **Invention flags:** call out the original choices ("the brass-on-charcoal palette is original — neither ref used it; chosen to match 'warm, prestigious' in the direction")
@@ -357,7 +406,13 @@ When the user saves, the Step 5 `mv` sweeps preview files along with the DESIGN.
 
 ## Important behaviors
 
-**Verbatim means verbatim.** For both Path A (catalog) and library hits, the file you deliver must be byte-identical to the source. No paraphrasing, no re-titling, no "tone improvements," no Section 9 restructuring, no adding a "Source:" footer. If the source has 9 sections, yours has 9. If it has 4, yours has 4. If it says "Near Black," yours says "Near Black." The whole value of a catalog is that someone else wrote it carefully — do not overwrite that voice with your own.
+**Lint gate is mandatory.** Step 4a's `npx @google/design.md@latest lint` runs against every staged DESIGN.md before Step 4b's report. Errors block promotion to Step 5. Warnings are surfaced for triage but don't auto-block. The CLI being unavailable (network / Node version mismatch) does not bypass the gate — fall back to structural sanity check (YAML parses, all 8 sections present or explicitly omitted, token references resolve).
+
+**Library hits are byte-identical.** Step 1 library hits return the existing DESIGN.md verbatim — no re-emission, no re-lint, no re-transformation. The library is the user's curated archive; it's already been linted at write time.
+
+**Path A is transform-faithful, not copy-verbatim.** Catalog sources are in VoltAgent's 9-section format; output is Google's 8-section + YAML. The transformation must preserve every token, every named distinction, every brand-specific guideline in the source — only the *shape* changes. Don't paraphrase, don't "improve" the brand voice, don't editorialize the catalog curator's choices. If the source says "Near Black", your YAML has `near-black: "#141413"` and your prose still calls it Near Black. The whole value of the catalog is that someone wrote it carefully.
+
+**Paths B and C are original writing.** B is faithful to URLs (refs ARE the source); C is invented from direction (refs INFORM the source). Both produce new DESIGN.md content in Google format — they don't have a verbatim contract.
 
 **Library is the only long-lived location for DESIGN.md files.** Staging lives in `/tmp/design/` and is either promoted to the library via `mv` or left for OS cleanup. Never `cp` — `mv` is what keeps the library the single source of truth.
 
@@ -369,7 +424,8 @@ When the user saves, the Step 5 `mv` sweeps preview files along with the DESIGN.
 
 ## Anti-patterns
 
-- **Don't paraphrase catalog or library content.** Ever. If the source file exists (Path A or library), copy it verbatim. Rewriting it is the single worst failure mode of this skill — it produces a plausible-looking document that doesn't match what the user saw on getdesign.md and destroys the authority of the catalog. Paths B and C are the only paths that generate new writing (B faithful to URLs, C invented from refs).
+- **Don't editorialize the brand on Path A.** The transformation reshapes 9→8 sections + YAML, but the brand's identity — colors, typography decisions, named distinctions, anti-patterns — must come through unchanged. Rewriting the catalog curator's voice with your own is the single worst failure mode of Path A; it produces a plausible-looking document that doesn't match the brand's actual identity.
+- **Don't skip the lint gate.** Every emit (A, B, C) runs through `npx @google/design.md@latest lint` before Step 4b's report. Errors block promotion; soft-failing past an error is a defect.
 - **Don't blur B and C.** Path B reproduces a site faithfully; Path C invents using refs as mood. If a user provides URLs and written direction, route to C — copying ref tokens unchanged into a "C" output is sloppy invention. If a user provides only URLs and faithful intent, route to B — inventing original tokens when they wanted faithful extraction is the opposite failure. When in doubt, ask.
 - **Don't skip the Influences section on Path C.** It's how the user audits whether the invention is grounded. Without it, the output looks like Path B writing pretending to be original.
 - **Don't auto-derive a Path C slug from a ref URL.** `northsignal` for a design inspired by northsignal.dev shadows a future Path B extract of the real site. Always ask the user for a namespace-safe slug.

@@ -34,7 +34,7 @@ Fork the repo and edit `SKILL.md` files directly. To get a live-edit loop withou
 
 ```bash
 git clone https://github.com/Outer-Heaven-Technologies/arsenal-planning.git ~/Dev/arsenal-planning
-ln -sfn ~/Dev/arsenal-planning/skills ~/.claude/plugins/cache/arsenal-planning/arsenal-planning/0.2.0/skills
+ln -sfn ~/Dev/arsenal-planning/skills ~/.claude/plugins/cache/arsenal-planning/arsenal-planning/0.3.0/skills
 ```
 
 Edits land on the next skill invocation — no reinstall. Add or remove a skill by changing `skills/`; restart Claude Code so it re-scans. Bump the version in `.claude-plugin/plugin.json` when you cut a release.
@@ -43,13 +43,14 @@ Edits land on the next skill invocation — no reinstall. Add or remove a skill 
 
 Two ways:
 
-1. **Slash command** — `/arsenal-planning:mvp`, `/arsenal-planning:features`, etc. Use when you want to be deliberate.
+1. **Slash command** — `/arsenal-planning:mvp`, `/arsenal-planning:features`, etc. **Required for `mvp`, `features`, and `gtm`** — these produce a multi-file planning suite, so opting in is deliberate.
 2. **Natural language** — Claude reads each skill's `description` frontmatter and auto-fires when you say something that matches:
-   - "I have an idea for a habit tracker" → `arsenal-planning:mvp`
-   - "Drill these features into specs" → `arsenal-planning:features`
+   - "Plan the iOS UX" → `arsenal-planning:ux-ios`
    - "Get me a Shopify-style design spec" → `arsenal-planning:design`
+   - "I need mockups" → `arsenal-planning:mockups`
+   - "Validate this market" → `arsenal-planning:market-analysis`
 
-Most skills auto-trigger; the per-skill trigger phrases are listed below.
+`mvp`, `features`, and `gtm` require slash commands. The other skills auto-trigger; per-skill trigger phrases are listed below and in PIPELINE.md.
 
 ## The pipeline
 
@@ -245,25 +246,28 @@ For hybrid products (SaaS with marketing + app, iOS with marketing site), run tw
 
 ### `design` — design spec for any brand, URL, or written direction
 
-Produces a `DESIGN.md` and maintains a personal library at `~/.claude/design-md-library/<slug>/`. Three paths:
+Produces a `DESIGN.md` in the **[Google DESIGN.md format](https://github.com/google-labs-code/design.md)** (Apache 2.0) — YAML front matter holding machine-readable design tokens plus an 8-section markdown body — and maintains a personal library at `~/.claude/design-md-library/<slug>/`. Three paths:
 
-- **Path A — catalog.** Verbatim fetch of a curated DESIGN.md from VoltAgent's getdesign.md catalog. *"Get me Shopify."*
-- **Path B — extract.** Faithfully extracts a design from one or more URLs. URLs *are* the source. *"Extract design from northsignal.dev."*
-- **Path C — inspiration.** Invents an original DESIGN.md from written direction, with optional URL refs as mood boards (not sources). *"Moody brutalist, late-90s zine, but warmer."*
+- **Path A — catalog.** Fetches a curated source from VoltAgent's getdesign.md catalog, then **transforms** the 9-section source into Google's 8-section + YAML format. The catalog is the brand-truth source; we normalize the shape. Original kept at `<slug>/legacy/DESIGN.md` for reference. *"Get me Shopify."*
+- **Path B — extract.** Faithfully extracts a design from one or more URLs, emitting directly in Google format. URLs *are* the source. *"Extract design from northsignal.dev."*
+- **Path C — inspiration.** Invents an original DESIGN.md from written direction (Google format), with optional URL refs as mood boards (not sources). *"Moody brutalist, late-90s zine, but warmer."*
+
+**Mandatory lint gate.** Every emit runs through `npx @google/design.md@latest lint` before promotion to the library. Errors block; warnings surface for triage. No file ships invalid.
 
 **The B-vs-C line.** B reproduces existing designs faithfully; C creates new ones using refs for inspiration. Written direction or blend language ("X meets Y", "inspired by X but Z") routes to C. Pure URLs with faithful intent route to B. When a single message contains both, the skill asks once.
 
 **How it works**
 
-1. **Library check.** Looks up by slug; hits return verbatim.
+1. **Library check.** Looks up by slug; hits return the saved DESIGN.md verbatim.
 2. **Route.** Phrasing routes among A / B / C — see the trigger list below.
-3. **Path A — fetch.** `curl` raw markdown from `unpkg`. The skill explicitly forbids scraping the React-rendered `getdesign.md` HTML; Firecrawl is the fallback.
-4. **Path B — extract.** `firecrawl_scrape` with tuned parameters (`onlyMainContent=false`, `waitFor=2000`, fullpage screenshot), then *studies the site like a designer, not a parser* — atmosphere and typographic personality first, tokens second.
-5. **Path C — invent.** Parses written direction (atmosphere, archetype, hard constraints), scrapes any ref URLs as *mood boards* not sources, then writes an original DESIGN.md. Adds an **Influences** subsection to Section 1 citing each ref and what it contributed; tokens get inline citations only where the link to a ref is real and specific.
-6. **Stage & promote.** Output staged to `/tmp/design/<slug>/`, then atomically `mv`'d into the library (never `cp` — the library stays the single source of truth).
-7. **Preview.** Generates light/dark HTML previews.
+3. **Path A — fetch + transform.** `curl` raw markdown from `unpkg`, save VoltAgent source to `<slug>/source/voltagent.md`, then transform section-by-section into Google format (YAML tokens extracted from prose; 9 sections collapsed to 8).
+4. **Path B — extract.** `firecrawl_scrape` with tuned parameters, then write directly in Google format — token extraction is structured, not prose-only.
+5. **Path C — invent.** Parses written direction, scrapes any ref URLs as mood boards, then writes an original DESIGN.md in Google format. Adds an Influences subsection citing each ref.
+6. **Lint gate.** `npx @google/design.md@latest lint` runs on the staged DESIGN.md. Errors block promotion.
+7. **Stage & promote.** Output staged to `/tmp/design/<slug>/`, then atomically `mv`'d into the library (never `cp`).
+8. **Preview.** Path A uses catalog-authoritative previews from getdesign.md. Paths B and C generate inline self-contained HTML previews.
 
-**Verbatim discipline.** Path A and library hits are byte-for-byte. *If the source has 9 sections, yours has 9. If it says 'Near Black,' yours says 'Near Black.'* Paths B and C are the only paths that produce new writing — B faithful to URLs, C invented from refs. Both pick **one** closest-match reference example (claude / apple / lamborghini) per run; Path C may read two if the direction explicitly mixes archetypes ("warm but loud"). Inferred values get tagged `[inferred]` with reasoning. Saying "refresh", "re-extract", or "force new" re-runs against the saved `source.txt`.
+**Format discipline.** Library entries from before v0.3 are now in Google format — the legacy 9-section source is preserved at `<slug>/legacy/DESIGN.md` per entry. New emits target Google format from the start.
 
 **Path C refresh caveat.** Refreshing a Path C entry re-invents from saved direction and refs — output won't be byte-identical to the previous version. The skill warns before regenerating.
 
@@ -458,7 +462,9 @@ project-root/
 
 ## Credits
 
-The `design` skill is built around [VoltAgent's awesome-design-md](https://github.com/VoltAgent/awesome-design-md) project (MIT licensed). The 9-section DESIGN.md format, the catalog of curated brand templates, and the `getdesign.md` website are all VoltAgent's work. Arsenal's `design` skill is original code that orchestrates fetches from VoltAgent's public catalog and writes new DESIGN.md files in their format — but the format spec belongs to them. Thanks to the awesome-design-md maintainers.
+The `design` skill emits files in the **[Google DESIGN.md format](https://github.com/google-labs-code/design.md)** (Apache 2.0) — YAML front matter for machine-readable design tokens plus an 8-section markdown body. The spec lives upstream at `google-labs-code/design.md`; arsenal-planning's `design` skill orchestrates how those files are produced and linted, but the format itself belongs to Google. Lint via `npx @google/design.md@latest lint <DESIGN.md>`.
+
+Path A (catalog) sources known brands from [VoltAgent's getdesign.md catalog](https://github.com/VoltAgent/awesome-design-md) (MIT licensed) and transforms them into Google format — the catalog's curated brand-truth content is preserved while the file shape is normalized. Thanks to both projects' maintainers.
 
 ## License
 
