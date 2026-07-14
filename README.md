@@ -7,10 +7,12 @@
    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ```
 
-A Claude Code plugin. Markdown-only planning skills that turn an idea into a complete planning record — research, specs, UX, design, and GTM:
+# arsenal-planning
+
+The planning half of the Arsenal workflow. This Claude Code plugin provides Markdown-only skills that turn an idea into a canonical planning record—research, specs, UX, design, and GTM:
 
 ```
-idea → market dossier → MVP spec → feature specs → UX → design → GTM plan
+idea → market dossier → MVP spec → feature specs → UX → design → build → GTM plan
 ```
 
 Each skill works standalone. They also chain: each one writes a markdown artifact the next reads, so you never answer the same question twice.
@@ -53,16 +55,17 @@ Two ways:
 
 ## The pipeline
 
-```
-[market-analysis →] mvp → features → ux-{web,app,ios} → design → ──→ arsenal-build → ...
-                                                                         gtm
+```text
+planning:  [market-analysis →] mvp → features → ux-{web,app,ios} → design
+                                                                       ↓
+execution:                                                       arsenal-build → built MVP → gtm
 ```
 
 > **Research split.** `market-analysis` is an optional upstream skill that produces an executive-grade research dossier (`.arsenal/strategy/research/MARKET_RESEARCH.md` — market + customer + industry structure + Porter's all 5 forces + conditional PESTLE + SWOT + risks + recommendations). It runs standalone for investor decks, market-entry research, and adjacent-market scouting — or feeds into `mvp` for product validation. `mvp` reads it when present and falls back to lightweight inline research when not.
 
 > **Mockups.** Put actual mockup source or rendered files in `.arsenal/design/mockups/`. The build orchestrator inspects available mockups alongside FEATURES, UX, and DESIGN when planning each phase.
 
-> **Cross-plugin handoff.** Once planning is complete, hand the project to arsenal-build. The artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md` or `features/*.md`, `UX.md`, `DESIGN.md`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`, and optional actual mockups) are at canonical paths under `.arsenal/` for any execution system to consume.
+> **Cross-plugin handoff.** Once FEATURES, UX, and DESIGN are ready, hand the project to [arsenal-build](https://github.com/Outer-Heaven-Technologies/arsenal-build). It bootstraps the implementation anchors, executes one phase at a time, verifies runtime behavior, requires independent review, and opens one PR per phase. GTM remains a planning skill and normally runs after the MVP is built or nearly built.
 
 `ux-*` is three surface-specific skills — `ux-web` (marketing sites), `ux-app` (authenticated web apps), `ux-ios` (native iOS). All three write to `.arsenal/design/UX.md`.
 
@@ -133,7 +136,7 @@ Appendix is excluded from page count — sources (Appendix B) are the credibilit
 - **Or trigger with:** "research the market for…", "do a competitive analysis for…", "validate this market", "build me a market dossier", "executive research on…", "should I enter this space"
 
 - **Inputs:** none — pure upstream.
-- **Outputs (`.arsenal/strategy/`):** `MARKET_RESEARCH.md` (unified executive dossier). A working `RESEARCH_PLAN.md` is produced during research and stays as historical record.
+- **Outputs (`.arsenal/strategy/research/`):** `MARKET_RESEARCH.md` (unified executive dossier) and `RESEARCH_PLAN.md` (retained working record).
 
 ---
 
@@ -147,7 +150,7 @@ Drills an idea into a focused **MVP spec** — what to build first, why, with su
 2. **Research context.** Three paths:
    - **A.** `MARKET_RESEARCH.md` exists from `market-analysis` → reads the dossier and uses it as context.
    - **B.** No dossier; project is non-trivial → suggests running `market-analysis` first, with continue/lightweight/skip options.
-   - **C.** Lightweight inline research (5–10 web queries via Jina MCP or WebSearch) — grounding-grade, not dossier-grade.
+   - **C.** Lightweight inline web research (5–10 queries using the host's available search tools) — grounding-grade, not dossier-grade.
 3. **Direction check.** If research surfaced anything (Path A or C), briefly ask the user whether their understanding has shifted before drafting the spec.
 4. **Write the spec.** `.arsenal/strategy/MVP_SPEC.md` with Must / Should / Won't feature buckets, user stories, core value loop, success metrics, distribution hypothesis, phased roadmap.
 5. **Review & recommendation.** Go / pivot / kill in conversation, with reasoning grounded in research if present, in intake judgment otherwise (and flagged accordingly).
@@ -206,7 +209,7 @@ For hybrid products (SaaS with marketing + app, iOS with marketing site), run tw
 
 **How they work**
 
-1. **Discover.** Read upstream planning context (`MVP_SPEC.md`, `ARCHITECTURE.md`, `CLAUDE.md`) before asking.
+1. **Discover.** Read upstream planning context (`MVP_SPEC.md`, `FEATURES.md`, `ARCHITECTURE.md`, and any host-readable persistent context such as `AGENTS.md` or `CLAUDE.md`) before asking.
 2. **Classify.** `ux-app` classifies app shape (productivity, daily-driver, dashboard, creation, etc.) and engagement model (ritual, workflow, reference, creation, monitoring). `ux-ios` classifies app shape and monetization model (free, freemium, subscription, hard/soft paywall). `ux-web` classifies industry against its skeleton library.
 3. **Lookup library.** Each skill consults its own references:
    - `ux-web/references/skeletons.md` — industry skeletons (SaaS, Fintech, AI/Chatbot, DevTool, Agency, Micro SaaS) + compressed appendix
@@ -338,7 +341,7 @@ The artifact layout that arsenal-planning writes into a *consuming project*:
 
 ```
 project-root/
-├── CLAUDE.md                              ← stays at root
+├── AGENTS.md or CLAUDE.md                 ← persistent agent context, when present
 └── .arsenal/
     ├── ARCHITECTURE.md                    ← project anchor (written by arsenal-build)
     ├── CONVENTIONS.md                     ← project anchor (written by arsenal-build)
@@ -371,7 +374,7 @@ project-root/
 
 ## Pairs with
 
-- **[arsenal-build](https://github.com/Outer-Heaven-Technologies/arsenal-build)** — the execution half. Reads `.arsenal/FEATURES.md`, `.arsenal/design/UX.md`, `.arsenal/design/DESIGN.md`, and `.arsenal/design/mockups/` from this plugin's outputs and writes real code, opens PRs.
+- **[arsenal-build](https://github.com/Outer-Heaven-Technologies/arsenal-build)** — the provider-agnostic execution half. It reads canonical feature and design artifacts, generates missing architecture and task anchors, implements design and feature passes, verifies runtime behavior, requires independent review, and opens one PR per phase.
 
 ## Credits
 
