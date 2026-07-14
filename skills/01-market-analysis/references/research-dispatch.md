@@ -1,10 +1,10 @@
-# Research Dispatch — Investigator Framing
+# Research Investigation — Worker Framing
 
-This file is the **per-investigation framing preamble** that mvp prepends to each investigation dispatched through `dispatch-parallel` during Step 2c (deep market/customer research) and Step 3a (per-competitor deep analysis).
+This file is the per-investigation framing used during Step 2c (deep market/customer research) and Step 3a (per-competitor deep analysis).
 
-The dispatch-parallel skill's own `references/investigator-prompt.md` handles the general read-only-investigation contract. This file adds the market-research-specific rules: citation requirements, source-quality grading, tool preferences, research strategy.
+The market-analysis orchestrator gives this framing to each fresh-context worker. When workers are unavailable, the initiating context follows it inline for one bounded investigation at a time. It defines citation requirements, source-quality grading, tool preferences, research strategy, and the return format.
 
-**Use:** when constructing an investigation description to pass to `dispatch-parallel`, paste this framing first, then the investigation-specific question and source priorities. The investigator subagent receives both.
+**Use:** provide this framing first, followed by the investigation's specific question and source priorities.
 
 ---
 
@@ -85,11 +85,11 @@ Anthropic's API pricing tripled for Claude Opus between 2024 and 2025
 
 ---
 
-## Investigation output format
+## Investigation return format
 
-Each investigation returns to dispatch-parallel via the standard `investigation-N-result.md` file. Per dispatch-parallel's contract, the reconciler reads only the `## Files touched` and `## Recommendations` sections — but mvp also reads the body for synthesis into the dossier.
+Each worker returns one self-contained report directly to the market-analysis orchestrator. Inline fallback work produces the same report shape in working context.
 
-**Required sections in the result file:**
+**Required sections in the report:**
 
 1. **Question** — restate the specific research question this investigation answered
 2. **Method** — 2-3 sentence summary of how the research was conducted (queries, sources consulted, what was excluded)
@@ -99,7 +99,7 @@ Each investigation returns to dispatch-parallel via the standard `investigation-
 6. **Recommendations** — 2-4 bullets on what this finding implies for the build (this is what gets pulled into the dossier's "So what?" closures)
 7. **Files touched** — every source URL accessed, tier-tagged
 
-Length: 1500–3000 words target. Longer means the investigation was too broad; trim and re-dispatch a narrower follow-up if needed.
+Length: 1500–3000 words target. Longer means the investigation was too broad; trim and rerun a narrower follow-up if needed.
 
 ---
 
@@ -111,17 +111,17 @@ If the question can't be answered in 15 tool calls, **return early with what you
 ## Status: SCOPE_TOO_BROAD
 
 The question "What's the global market size for productivity apps?" is too broad
-to answer in this dispatch. The market spans 12+ distinct categories (todo, notes,
+to answer in this investigation. The market spans 12+ distinct categories (todo, notes,
 calendars, etc.) each with separate sizing.
 
-Recommended re-dispatch: split into 2-3 narrower investigations by category, or
+Recommended next step: split into 2-3 narrower investigations by category, or
 narrow to the specific segment relevant to this product.
 
 ## What I found in 8 calls
 [Partial findings with citations]
 ```
 
-mvp will see this and either re-dispatch with narrower questions or accept the partial result and adjust the dossier accordingly.
+The orchestrator either reruns narrower investigations or accepts the partial result and adjusts the dossier accordingly.
 
 ---
 

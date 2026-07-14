@@ -1,6 +1,6 @@
 {
   "name": "arsenal-planning",
   "version": "0.3.0",
-  "description": "Outer Heaven planning pipeline: market-analysis → mvp → features → ux-{web,app,ios} → design → mockups → gtm. Markdown-only planning artifacts that anchor a downstream build pipeline (see arsenal-build).",
+  "description": "Outer Heaven planning pipeline: market-analysis → mvp → features → ux-{web,app,ios} → design → gtm. Markdown-only planning artifacts that anchor a downstream build pipeline (see arsenal-build).",
   "license": "AGPL-3.0-or-later"
 }

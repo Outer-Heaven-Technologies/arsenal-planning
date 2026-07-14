@@ -1,6 +1,6 @@
 ---
 name: market-analysis
-description: Produces an executive-grade unified research dossier — market overview (TAM/SAM/SOM bottom-up) + customer JTBD + industry structure with Porter's all 5 forces + conditional PESTLE + SWOT synthesis + risks + strategic recommendations. Runs deep research via `dispatch-parallel` with Jina MCP / Firecrawl / WebSearch; every claim tier-graded (T1–T4) with explicit confidence ratings. Output format scales (Brief 3-5pp / Standard 5-10pp / Comprehensive 10-15pp body; appendix excluded) and is decided at the end based on intent. Standalone — use for product validation, investor decks, market expansion research, adjacent-market scouting, or any project requiring grounded executive analysis. Triggers: "research the market for X", "do a competitive analysis for Y", "validate this market", "build me a market dossier", "executive research on Z", "do deep market research", "should I enter this space".
+description: Produces an executive-grade unified research dossier — market overview (TAM/SAM/SOM bottom-up) + customer JTBD + industry structure with Porter's all 5 forces + conditional PESTLE + SWOT synthesis + risks + strategic recommendations. Runs deep research with bounded fresh-context workers when the host supports them, otherwise inline, using Jina MCP / Firecrawl / WebSearch; every claim tier-graded (T1–T4) with explicit confidence ratings. Output format scales (Brief 3-5pp / Standard 5-10pp / Comprehensive 10-15pp body; appendix excluded) and is decided at the end based on intent. Standalone — use for product validation, investor decks, market expansion research, adjacent-market scouting, or any project requiring grounded executive analysis. Triggers: "research the market for X", "do a competitive analysis for Y", "validate this market", "build me a market dossier", "executive research on Z", "do deep market research", "should I enter this space".
 ---
 
 # Market Analysis
@@ -17,21 +17,18 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
-| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Build reads the specs cited by the active phase |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
-| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
-
-**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
+**Build-time access:** `.arsenal/strategy/` is protected during build. The orchestrator reads only active feature specs, design references, and the single `.arsenal/TASKS.md` ledger; host-specific permission rules may enforce this.
 
 ## Philosophy
 
 - **Lead with the answer.** The exec summary uses SCR (Situation / Complication / Resolution). Every section ends with a "So what?" closure naming the implication.
 - **Be honest, not hype.** If the market is saturated or the idea has obvious problems, say so constructively. A weak claim from a Tier-1 source is more credible than a strong claim from a Tier-4 source.
-- **Research is uniform; format scales.** Every project gets dispatched parallel research with citations and source-quality grading. The format decision (Brief / Standard / Comprehensive) is made at the end, after research is complete and the user knows what they're looking at.
+- **Research is uniform; format scales.** Every project gets bounded research investigations with citations and source-quality grading. The format decision (Brief / Standard / Comprehensive) is made at the end, after research is complete and the user knows what they're looking at.
 - **Bottom-up beats top-down for sizing.** Always show bottom-up TAM/SAM/SOM math first; top-down is a sanity check. Investors discount top-down market sizing because it's noise; they trust bottom-up because it forces real assumptions.
 - **Citations are non-negotiable.** Every claim has a `[source: URL, tier, confidence]` inline citation. Uncited claims are rejected.
 
@@ -72,7 +69,7 @@ Confirm the intake summary before proceeding.
 
 ### Step 2: Market & Customer Research → §1, §2 of `MARKET_RESEARCH.md`
 
-Three sub-phases: **discovery sweep → checkpoint → deep research dispatch**.
+Three sub-phases: **discovery sweep → checkpoint → deep research investigations**.
 
 #### 2a — Discovery sweep
 
@@ -93,9 +90,9 @@ Present the discovery findings concisely (synthesize — don't dump raw search o
 
 Capture flags. **Prompting, not gating** — silence = proceed. The absence of a redirect is approval.
 
-#### 2c — Deep research dispatch
+#### 2c — Deep research
 
-Dispatch structured parallel research via the `dispatch-parallel` skill. This is where the research effort actually goes.
+Run structured research as 2–5 bounded investigations. Use fresh-context workers in parallel when the host supports them; otherwise execute the investigations inline one at a time. The initiating context owns the research plan, source-quality gate, and final synthesis.
 
 **Step 1 — Write the research plan.** Save to `.arsenal/strategy/research/RESEARCH_PLAN.md`. 2–5 specific research questions (testable questions, not topics) covering §1 + §2 of the dossier:
 
@@ -112,12 +109,14 @@ For each question, list:
 - Source-quality bar (tier-graded T1–T4; see `references/research-dispatch.md`)
 - Output requirement: every claim cited inline with `[source: URL, tier: T1–T4, confidence: H/M/L]`
 
-**Step 2 — Dispatch via `dispatch-parallel`.** Hand the plan off. Each research question becomes one investigation.
+**Step 2 — Run the investigations.** Each research question becomes one bounded investigation.
 
 Constraints:
-- Cap: 5 investigations max (dispatch-parallel's hard cap; matches Anthropic's "complex research" scaling rule)
-- Surface flag: `--surface web` (research is universal; not platform-specific)
-- Per-investigation prompt: **prefix with the framing in `references/research-dispatch.md`** (citation rules + source tiering + tool preferences + strategy + scaling caps), then the specific question and source priorities
+- Cap at 5 investigations so synthesis remains coherent.
+- Give every worker the framing in `references/research-dispatch.md`, followed by its specific question, source priorities, and an explicit return format.
+- Workers are read-only except for returning their report to the initiating context.
+- Parallelize only independent questions. Run dependent questions sequentially.
+- When fresh-context workers are unavailable, follow the same boundaries inline and finish one investigation before starting the next.
 
 Tools available to investigators (in preference order):
 1. **Jina MCP** — preferred. `jina_reader` for URL → clean markdown; `jina_search` for query → structured results
@@ -126,7 +125,7 @@ Tools available to investigators (in preference order):
 
 Investigators follow research strategy: "start with short broad queries, then narrow"; "prefer primary > authoritative secondary; never SEO content farms." Scaling: 3–10 tool calls per investigation, 15 hard cap.
 
-**Step 3 — Citation pass.** After investigations return, walk the synthesized text. Attach `[source: URL, tier: T1–T4, confidence: H/M/L]` per claim. **Reject any uncited claim** — either re-dispatch the relevant investigation to fill the gap, or remove the claim. Don't fabricate sources.
+**Step 3 — Citation pass.** After investigations return, walk the synthesized text. Attach `[source: URL, tier: T1–T4, confidence: H/M/L]` per claim. **Reject any uncited claim** — either rerun the relevant bounded investigation to fill the gap, or remove the claim. Don't fabricate sources.
 
 **Step 4 — Write §1 (Market Overview) and §2 (Customer Analysis) of `MARKET_RESEARCH.md`.** Each section ends with a "So what?" closure (1–2 sentences naming the strategic implication).
 
@@ -149,7 +148,7 @@ Three sub-phases: **competitive landscape → Porter's Five Forces → condition
 
 #### 3a — Competitive landscape
 
-Three steps: identify → checkpoint → deep analysis dispatch.
+Three steps: identify → checkpoint → deep analysis.
 
 **Identify (always).** Find 3–8 direct and indirect competitors via Jina/web search. Present one-line summaries each (URL + what they do + how they monetize). Don't go deep yet — shortlist only.
 
@@ -158,7 +157,7 @@ Three steps: identify → checkpoint → deep analysis dispatch.
 
 Capture the adjusted set.
 
-**Deep analysis dispatch.** For the user's adjusted set (cap 5 — if more, prioritize the most relevant or batch into two rounds), dispatch one investigation per competitor via `dispatch-parallel` with the same framing as §2. Each investigation pulls:
+**Deep analysis.** For the user's adjusted set (cap 5 — if more, prioritize the most relevant or batch into two rounds), run one bounded investigation per competitor with the same worker-or-inline fallback and framing as §2. Each investigation pulls:
 - What they do well (with real evidence — feature pages, customer testimonials)
 - What they do poorly (G2 / Capterra / Reddit / Twitter complaints — real user voice)
 - How they monetize (pricing tiers, business model, conversion mechanics)
@@ -458,7 +457,7 @@ For everything else, this is a 1-line stub:]
 [Excluded from page count. Brief but sources are non-negotiable.]
 
 ### A. Methodology
-[5-10 lines: research approach, tools used (Jina MCP, dispatch-parallel investigations, etc.), date ranges of sources, any primary research done]
+[5-10 lines: research approach, worker or inline investigation topology, tools used, date ranges of sources, any primary research done]
 
 ### B. Source list (tier-graded)
 
@@ -511,9 +510,9 @@ For everything else, this is a 1-line stub:]
 - **Use real data.** Search the web; use Jina MCP first, then Firecrawl, then WebSearch. Don't invent market stats or fake competitor names. If you can't find a number, say so with confidence L — that's more credible than a fabricated number with confidence H.
 - **Be constructively honest.** If the market is crowded, say so — then explain how to differentiate. If the idea is weak, suggest pivots in §7.
 - **Connect the dots.** Each section's "So what?" closure is non-negotiable. Without it, the dossier reads as enumeration, not analysis. (Bain's standard pattern.)
-- **Separate research from synthesis.** All web searching and data gathering happens in Step 2c and Step 3a via `dispatch-parallel` subagents. The main session synthesizes and writes; it doesn't search inline during synthesis (other than the discovery sweep in 2a / 3a's identify pass).
+- **Separate research from synthesis.** All web searching and data gathering happens inside the bounded investigations in Step 2c and Step 3a. The initiating context synthesizes and writes after those investigations finish; it doesn't search during synthesis other than the discovery sweeps in 2a and 3a.
 - **Cite everything.** Every claim in MARKET_RESEARCH.md has a `[source: URL, tier, confidence]` inline citation. Uncited claims are rejected. See `references/research-dispatch.md` for citation format and source-tiering rules.
-- **Use Jina MCP first.** Cleaner output, better signal-to-noise than vanilla fetch. The investigator-prompt framing in `references/research-dispatch.md` documents the preference order.
+- **Use Jina MCP first.** Cleaner output, better signal-to-noise than vanilla fetch. The worker framing in `references/research-dispatch.md` documents the preference order.
 - **Bottom-up beats top-down for sizing.** Always show bottom-up math first; top-down is a sanity check. Investors discount top-down market sizing because it's noise; they trust bottom-up because it forces real assumptions.
 - **Body cap is soft; sources are not.** The 3-5 / 5-10 / 10-15 page targets are soft. Going slightly over is fine if the content earns it. But the source list in Appendix B is the credibility anchor — never compress it.
 - **This skill is standalone.** It pairs naturally with `mvp` for product validation, but runs equally well for investor decks, market-entry scouting, adjacent-market research, or strategic planning where no MVP follows.

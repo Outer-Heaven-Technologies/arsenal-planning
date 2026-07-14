@@ -24,7 +24,7 @@ Generate a `UX.md` file: the UX backbone of a marketing website, landing page, o
 - `UX.md` = UX — information architecture, conversion flow, section ordering, what goes where and why
 - `DESIGN_SYSTEM.md` = UI — how it looks once you know what it is (tokens, components, motion)
 
-Generate `UX.md` first. `DESIGN_SYSTEM.md` references it — the component list in `DESIGN_SYSTEM.md` should derive from the components named here. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from `setup`, cross-check after generation.
+Generate `UX.md` first. `DESIGN_SYSTEM.md` references it — the component list in `DESIGN_SYSTEM.md` should derive from the components named here. If `.arsenal/design/DESIGN_SYSTEM.md` already exists from arsenal-build, cross-check after generation.
 
 ## Paths
 
@@ -32,15 +32,12 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
-| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Build reads the specs cited by the active phase |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
-| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
-
-**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
+**Build-time access:** `.arsenal/strategy/` is protected during build. The orchestrator reads only active feature specs, design references, and the single `.arsenal/TASKS.md` ledger; host-specific permission rules may enforce this.
 
 ## Workflow
 
@@ -152,7 +149,7 @@ project-root/
         └── UX.md
 ```
 
-If no `.arsenal/design/` directory exists, ask the user where to put it. If `setup` has been run, match its directory convention.
+Create `.arsenal/design/` when it does not exist.
 
 ## Important guidelines
 
@@ -162,7 +159,7 @@ If no `.arsenal/design/` directory exists, ask the user where to put it. If `set
 - **Components are the bridge to DESIGN_SYSTEM.md.** Every component named here should eventually be defined there. Use names specific enough to design against ("pricing comparison table" not "table").
 - **Anti-patterns are the highest-signal part.** Industry-specific "don't do this" guidance prevents expensive mistakes. Include at least 3-5 per high-stakes page.
 - **Conversion sequence beats aesthetic preference.** The reason hero → proof → benefits → objections → CTA works isn't theory — it's user psychology (loss aversion, social validation, decision fatigue). Question deviations.
-- **Cap `UX.md` at ~500 lines.** Long markdown bloats downstream context (`setup`, `features`, design skills all read this) and becomes unscannable. Sweet spot: 100–400 lines. If the skeleton would exceed 500 lines, split into a parent `UX.md` (page inventory + IA + global anti-patterns) plus per-page sub-files in a `ux/` folder (e.g., `ux/home.md`, `ux/pricing.md`) and cross-link.
+- **Cap `UX.md` at ~500 lines.** Long markdown bloats downstream context (arsenal-build, `features`, and design skills all read this) and becomes unscannable. Sweet spot: 100–400 lines. If the skeleton would exceed 500 lines, split into a parent `UX.md` (page inventory + IA + global anti-patterns) plus per-page sub-files in a `ux/` folder (e.g., `ux/home.md`, `ux/pricing.md`) and cross-link.
 - **Cross-references keep the docs honest.** If `UX.md` names a component, `DESIGN_SYSTEM.md` should define it. If `UX.md` names an integration, `ARCHITECTURE.md` should document it.
 - **2026 patterns worth knowing:**
   - Outcome-focused H1 (≤8 words) beats clever positioning

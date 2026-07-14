@@ -5,7 +5,7 @@ description: Builds a research-backed go-to-market plan covering positioning, ch
 
 # Plan GTM
 
-Build a research-backed launch and growth plan for a product that's been built (or is nearly complete). This skill picks up where `/arsenal-planning:mvp` and `/arsenal-build:setup` leave off — it answers "how do I get this in front of people and make money?"
+Build a research-backed launch and growth plan for a product that's been built or is nearly complete. It uses the product strategy, build anchors, and implemented product to answer “how do I get this in front of people and make money?”
 
 ## Paths
 
@@ -13,15 +13,12 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
-| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Build reads the specs cited by the active phase |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
-| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
-
-**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
+**Build-time access:** `.arsenal/strategy/` is protected during build. GTM may temporarily access strategy with owner-approved host permissions, then restore the protection.
 
 ## Philosophy
 
@@ -41,23 +38,15 @@ Files go in the same `.arsenal/strategy/` directory used by `/arsenal-planning:m
 
 ## Workflow
 
-### Step 0: Lift strategy lockdown (if applicable), then gather context
+### Step 0: Gather context
 
-**First, lift the strategy lockdown if it's in place.** When build execution has started in this project, `expand-phase` will have written `Read(.arsenal/strategy/**)` to `.claude/settings.json` to deny strategy access during build. `gtm` legitimately needs `MARKET_RESEARCH.md` and `MVP_SPEC.md` from there — so:
+This strategy skill requires access to `.arsenal/strategy/`. If the host currently protects that directory during build execution, ask the owner to grant temporary access through the host's native mechanism and restore the prior protection when GTM work finishes.
 
-1. Read `.claude/settings.json`. If `permissions.deny` contains `Read(.arsenal/strategy/**)`, **remove that entry temporarily**. Preserve any non-arsenal entries the user added.
-2. Write back.
-3. Tell the user: *"Lifting `.arsenal/strategy/` lockdown for GTM research. Will restore at the end."*
-
-After all GTM work is done (final output written), **restore the strategy deny** by re-adding `Read(.arsenal/strategy/**)` to `permissions.deny` and writing settings back. Tell the user: *"Strategy lockdown restored."*
-
-If `.claude/settings.json` doesn't exist or doesn't have a strategy deny, this is a pre-execution invocation — proceed without mutation; strategy is freely readable.
-
-**Then, gather context.** Look for existing project context — this skill builds on prior work:
+Look for existing project context — this skill builds on prior work:
 
 **If running in Claude Code (has filesystem access):**
 - Check for `.arsenal/strategy/research/MARKET_RESEARCH.md` (unified executive dossier from `/arsenal-planning:market-analysis` — contains market overview, customer JTBD, competitive landscape, Porter's Five Forces, SWOT, and recommendations all in one doc; competitive analysis lives in §3) and `.arsenal/strategy/MVP_SPEC.md` from `/arsenal-planning:mvp`
-- Check for `ARCHITECTURE.md`, `CONVENTIONS.md` from `/arsenal-build:setup`
+- Check for `.arsenal/ARCHITECTURE.md` and `.arsenal/CONVENTIONS.md` from arsenal-build's first-run setup
 - Scan the codebase to understand what's actually been built (routes, features, UI)
 - Use all of this as input context — don't ask the user to repeat what's already documented
 

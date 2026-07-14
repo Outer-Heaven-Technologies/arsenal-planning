@@ -1,6 +1,6 @@
 ---
 name: mvp
-description: Drills an idea into a focused MVP spec — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads upstream `.arsenal/strategy/research/MARKET_RESEARCH.md` from `market-analysis` if available; otherwise does lightweight inline research to ground the spec. Captures project intent (hobby / freelance / startup / client-work); client-work soft-routes to `features`. Surface-level tech decisions (web vs iOS, mobile vs desktop) are fair game — stack-specific decisions defer to `setup`. Outputs `.arsenal/strategy/MVP_SPEC.md`. Use when the user has an idea and wants a buildable spec — with or without prior market analysis.
+description: Drills an idea into a focused MVP spec — what to build first, why, with success metrics and a go/pivot/kill recommendation. Reads upstream `.arsenal/strategy/research/MARKET_RESEARCH.md` from `market-analysis` if available; otherwise does lightweight inline research to ground the spec. Captures project intent (hobby / freelance / startup / client-work); client-work soft-routes to `features`. Surface-level tech decisions (web vs iOS, mobile vs desktop) are fair game — stack-specific decisions defer to the arsenal-build first-run setup. Outputs `.arsenal/strategy/MVP_SPEC.md`. Use when the user has an idea and wants a buildable spec — with or without prior market analysis.
 ---
 
 # Plan MVP
@@ -20,15 +20,12 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 
 | What | Path | Notes |
 |---|---|---|
-| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, mockup-briefs/, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
-| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Gated per phase via `.claude/settings.json` |
+| Strategy archive (denied during build) | `.arsenal/strategy/` | MVP_SPEC.md, GTM_STRATEGY.md, REVENUE_MODEL.md, research/{MARKET_RESEARCH,RESEARCH_PLAN}.md |
+| Feature specs | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/<slug>.md` (split-mode) | Build reads the specs cited by the active phase |
 | Project anchor docs | `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Always readable during build |
 | Design reference set | `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Always readable during build |
-| Per-task briefs + ephemera | `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Gitignored; phase-N gated per active phase |
 
-**Configuration:** `.arsenal/config.yaml` may override the root location, but defaults work for nearly all projects. File names are not configurable.
-
-**Gating:** `expand-phase` writes baseline denies and per-phase allow rules to `.claude/settings.json`. `close-feature-phase` reverts at phase end. Strategy stays fully denied throughout build.
+**Build-time access:** `.arsenal/strategy/` is protected during build. The orchestrator reads only active feature specs, design references, and the single `.arsenal/TASKS.md` ledger; host-specific permission rules may enforce this.
 
 ## Philosophy
 
@@ -36,7 +33,7 @@ All arsenal artifacts live under `.arsenal/` at the project root.
 - **Lightweight when standalone, grounded when not.** If `MARKET_RESEARCH.md` exists from `market-analysis`, lean on it. Otherwise do enough research to draft an informed spec — but don't reinvent the executive dossier.
 - **Ruthlessly cut scope.** MVP = smallest thing that validates the core hypothesis. If it's not in the core loop, it's post-MVP.
 - **Be honest, not hype.** If the idea has obvious problems, say so constructively.
-- **Surface-level tech decisions are fine.** Web vs iOS, mobile vs desktop, marketing site vs webapp — those shape the spec and shouldn't be deferred. Stack-specific decisions (framework, database, hosting) defer to `/arsenal-build:setup`.
+- **Surface-level tech decisions are fine.** Web vs iOS, mobile vs desktop, marketing site vs webapp — those shape the spec and shouldn't be deferred. Stack-specific decisions (framework, database, hosting) defer to arsenal-build's first-run setup.
 
 ## Output File
 
@@ -95,7 +92,7 @@ If the user picks "lightweight research" or the project is small enough to not w
 - What's the rough pricing in the space? (one search — competitor pricing pages)
 - Any obvious blockers? (one search — regulatory landmines, platform restrictions, recent shutdowns of similar products)
 
-Use Jina MCP if available, otherwise WebSearch. **This is grounding-grade research, not dossier-grade** — no formal citation requirements, no source-tier grading, no dispatch-parallel. The goal is enough context to draft an informed spec, not a research dossier.
+Use Jina MCP if available, otherwise WebSearch. **This is grounding-grade research, not dossier-grade** — no formal citation requirements or source-tier grading. The goal is enough context to draft an informed spec, not a research dossier.
 
 Synthesize findings into a brief mental model (don't write a research file). If something surfaces that meaningfully changes the spec (e.g., a near-identical competitor just shipped the same idea, or there's a regulatory issue the user didn't know about), flag it before proceeding.
 
@@ -121,7 +118,7 @@ Write `.arsenal/strategy/MVP_SPEC.md` using the template below. The spec reflect
 - Every feature ties back to a user problem identified in intake / research
 - Ruthlessly cut scope — if it's not in the core loop, it's post-MVP
 - Include clear success metrics so the user knows if the MVP worked
-- Surface-level tech decisions (web / iOS / etc.) belong here. Stack-level decisions don't — those go in `setup`.
+- Surface-level tech decisions (web / iOS / etc.) belong here. Stack-level decisions belong to arsenal-build's first-run setup.
 
 **Format: `.arsenal/strategy/MVP_SPEC.md`**
 
@@ -138,7 +135,7 @@ Write `.arsenal/strategy/MVP_SPEC.md` using the template below. The spec reflect
 [Refined from intake / §2 of MARKET_RESEARCH.md if exists — one specific persona for MVP]
 
 ## Surface
-[Web (marketing site / authenticated webapp), native iOS, cross-platform mobile, CLI, library, server-only. This is the platform-level decision; stack details defer to arsenal-build:setup.]
+[Web (marketing site / authenticated webapp), native iOS, cross-platform mobile, CLI, library, server-only. This is the platform-level decision; stack details defer to arsenal-build's first-run setup.]
 
 ## Core Value Loop
 [The single repeating loop that delivers value. E.g., "User logs habit → sees streak → feels motivated → comes back tomorrow"]
@@ -190,8 +187,8 @@ Write `.arsenal/strategy/MVP_SPEC.md` using the template below. The spec reflect
 [If `.arsenal/strategy/research/MARKET_RESEARCH.md` was the source for this spec, reference it here: "Grounded in `.arsenal/strategy/research/MARKET_RESEARCH.md` — see §X for [topic]". Otherwise note "Spec drafted from intake + lightweight research" or "Spec drafted from intake only — recommend running `/arsenal-planning:market-analysis` before significant investment".]
 
 ## Next Step
-→ For UI projects: `/arsenal-planning:features` to drill each MVP feature, then `ux-{web,app,ios}` → `design` → `mockups` → `/arsenal-build:setup` → per-phase build pipelines.
-→ For non-UI projects (CLI, library, API, server-only): skip ux-* and design, go `/arsenal-planning:features` → `/arsenal-build:setup` directly.
+→ For UI projects: `/arsenal-planning:features` to drill each MVP feature, then `ux-{web,app,ios}` → `design` → add actual mockups to `.arsenal/design/mockups/` when available → hand off to arsenal-build.
+→ For non-UI projects (CLI, library, API, server-only): skip ux-* and design, then hand off to arsenal-build after `/arsenal-planning:features`.
 ```
 
 ### Step 5: Review & Recommendation
@@ -203,7 +200,7 @@ After `MVP_SPEC.md` lands, give the user a tight closing summary in conversation
   - If Path B/C (lightweight or no research): make the call based on intake judgment + whatever the lightweight research surfaced; flag explicitly that this is a lower-confidence call than a full dossier-grounded one
 - **Most important thing to validate first** — the single most decision-critical unknown
 - **Quick validation steps** before writing code (landing page test, Reddit post, DM 10 potential users, prototype a single screen)
-- **Natural next step:** `/arsenal-planning:features` for UI projects (then ux-* → design → mockups → arsenal-build:setup), or `/arsenal-build:setup` directly for non-UI projects
+- **Natural next step:** `/arsenal-planning:features` for UI projects (then ux-* → design → optional actual mockups → arsenal-build), or arsenal-build directly for non-UI projects
 - **After MVP is built:** `/arsenal-planning:gtm` is the logical step
 
 If the user skipped research entirely (Step 2 option 3) and the project looks serious in hindsight, soft-suggest running `market-analysis` retroactively as a sanity check before significant investment.
@@ -212,7 +209,7 @@ If the user skipped research entirely (Step 2 option 3) and the project looks se
 
 - **Lightweight research is grounding, not dossier-grade.** When this skill does its own research in Step 2 Path C, the goal is enough context to draft an informed spec — not to produce an executive dossier. That's `market-analysis`'s job.
 - **If the project is serious, point at `market-analysis`.** Don't try to do `market-analysis`-grade work inline. Suggest it; let the user choose.
-- **Surface-level tech decisions are fine.** Web vs iOS, mobile vs desktop, CMS-backed vs static — those shape the MVP and shouldn't be deferred. The line is at framework/database/hosting choice, which is `setup`'s job.
+- **Surface-level tech decisions are fine.** Web vs iOS, mobile vs desktop, CMS-backed vs static — those shape the MVP and shouldn't be deferred. Framework, database, and hosting choices belong to arsenal-build's first-run setup.
 - **Ruthlessly cut scope.** Must Have should be the smallest possible set that validates the core hypothesis. When in doubt, defer.
 - **Use real research signals.** Even lightweight research means real web searches, not speculation. If you can't find demand signals, say so — that itself is a finding.
 - **Connect the spec to research.** If `MARKET_RESEARCH.md` exists, every section of the spec should reference it where applicable (Target User → §2, Risks → §6, Distribution → §1.3). The spec is a synthesis, not an independent doc.

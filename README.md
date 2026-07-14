@@ -7,10 +7,10 @@
    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ```
 
-A Claude Code plugin. Markdown-only planning skills that turn an idea into a complete planning record — research, specs, UX, design, mockup briefs, GTM:
+A Claude Code plugin. Markdown-only planning skills that turn an idea into a complete planning record — research, specs, UX, design, and GTM:
 
 ```
-idea → market dossier → MVP spec → feature specs → UX → design → mockup briefs → GTM plan
+idea → market dossier → MVP spec → feature specs → UX → design → GTM plan
 ```
 
 Each skill works standalone. They also chain: each one writes a markdown artifact the next reads, so you never answer the same question twice.
@@ -47,7 +47,6 @@ Two ways:
 2. **Natural language** — Claude reads each skill's `description` frontmatter and auto-fires when you say something that matches:
    - "Plan the iOS UX" → `arsenal-planning:ux-ios`
    - "Get me a Shopify-style design spec" → `arsenal-planning:design`
-   - "I need mockups" → `arsenal-planning:mockups`
    - "Validate this market" → `arsenal-planning:market-analysis`
 
 `mvp`, `features`, and `gtm` require slash commands. The other skills auto-trigger; per-skill trigger phrases are listed below and in PIPELINE.md.
@@ -55,15 +54,15 @@ Two ways:
 ## The pipeline
 
 ```
-[market-analysis →] mvp → features → ux-{web,app,ios} → design → mockups → [user generates mockups in .arsenal/design/mockups/] → ──→ arsenal-build:setup → ...
-                                                                                                                                          gtm
+[market-analysis →] mvp → features → ux-{web,app,ios} → design → ──→ arsenal-build → ...
+                                                                         gtm
 ```
 
 > **Research split.** `market-analysis` is an optional upstream skill that produces an executive-grade research dossier (`.arsenal/strategy/research/MARKET_RESEARCH.md` — market + customer + industry structure + Porter's all 5 forces + conditional PESTLE + SWOT + risks + recommendations). It runs standalone for investor decks, market-entry research, and adjacent-market scouting — or feeds into `mvp` for product validation. `mvp` reads it when present and falls back to lightweight inline research when not.
 
-> **Mockup workflow.** `mockups` writes two-pass anchor-strategy briefs to `.arsenal/strategy/mockup-briefs/` — copy-paste-ready prompts engineered for Claude Design, Stitch, Open Design, or v0. The user feeds each brief into their tool, saves outputs to `.arsenal/design/mockups/`. Downstream design execution (in arsenal-build) consumes that directory.
+> **Mockups.** Put actual mockup source or rendered files in `.arsenal/design/mockups/`. The build orchestrator inspects available mockups alongside FEATURES, UX, and DESIGN when planning each phase.
 
-> **Cross-plugin handoff.** Once planning is complete, the natural next step is `arsenal-build:setup` if you have arsenal-build installed (`/plugin install arsenal-build@<repo>`). Otherwise, the artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md` or `features/*.md`, `UX.md`, `DESIGN.md`, `mockup-briefs/`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`) are at canonical paths under `.arsenal/` for any execution system to consume.
+> **Cross-plugin handoff.** Once planning is complete, hand the project to arsenal-build. The artifacts produced here (`MARKET_RESEARCH.md`, `MVP_SPEC.md`, `FEATURES.md` or `features/*.md`, `UX.md`, `DESIGN.md`, `GTM_STRATEGY.md`, `REVENUE_MODEL.md`, and optional actual mockups) are at canonical paths under `.arsenal/` for any execution system to consume.
 
 `ux-*` is three surface-specific skills — `ux-web` (marketing sites), `ux-app` (authenticated web apps), `ux-ios` (native iOS). All three write to `.arsenal/design/UX.md`.
 
@@ -78,36 +77,24 @@ Each stage writes files the next stage reads. You can enter at any point — ski
 | 4b | [`ux-app`](#ux---ux-architecture-before-visual-design) | `UX.md` for an authenticated web app — app shell, screen inventory, engagement model, empty states. |
 | 4c | [`ux-ios`](#ux---ux-architecture-before-visual-design) | `UX.md` for a native iOS app — navigation, onboarding, paywall, permissions, HIG compliance. |
 | 5 | [`design`](#design--design-spec-for-any-brand-url-or-written-direction) | Get a `DESIGN.md` — verbatim from catalog (A), extracted from URLs (B), or invented from written direction (C). Library hits return cached. |
-| 6 | [`mockups`](#mockups--two-pass-mockup-briefs-for-design-tools) | Generate two-pass anchor-strategy mockup briefs in `.arsenal/strategy/mockup-briefs/` from upstream FEATURES + UX + DESIGN. Briefs are copy-paste-ready prompts for Claude Design / Stitch / Open Design / v0. |
-| 7 | [`gtm`](#gtm--go-to-market-and-growth-plan) | Plan the launch — positioning, channels, pricing, revenue model, GTM timeline. Runs after the MVP is built (or nearly built). |
-| 8 | [`dispatch-parallel`](#dispatch-parallel--fan-out-independent-investigations) | Utility (off-pipeline). Fan out 2–5 genuinely independent investigations to parallel investigator subagents; reconcile results into one `SUMMARY.md`. Read-only; for audits, debug sessions, code analysis. Used internally by `market-analysis`. |
+| 6 | [`gtm`](#gtm--go-to-market-and-growth-plan) | Plan the launch — positioning, channels, pricing, revenue model, GTM timeline. Runs after the MVP is built (or nearly built). |
 
 See [`PIPELINE.md`](PIPELINE.md) for the full artifact dependency graph and entry-point matrix.
 
-## Configuration
+## Artifact layout
 
-All arsenal artifacts live under `.arsenal/` at the project root. No configuration is required for typical projects — the layout is fixed:
+All arsenal artifacts live at fixed canonical paths under `.arsenal/` at the project root:
 
 | Path | Holds |
 |---|---|
-| `.arsenal/strategy/` | User archive (MARKET_RESEARCH, RESEARCH_PLAN, MVP_SPEC, mockup-briefs, GTM_STRATEGY, REVENUE_MODEL). **Denied during build execution.** |
+| `.arsenal/strategy/` | User archive (MARKET_RESEARCH, RESEARCH_PLAN, MVP_SPEC, GTM_STRATEGY, REVENUE_MODEL). **Denied during build execution.** |
 | `.arsenal/FEATURES.md` (single-mode) or `.arsenal/features/` (split-mode) | Feature specs. Gated per phase. |
-| `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Project anchor docs. Always readable during build. |
-| `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Design reference set. Always readable during build. |
-| `.arsenal/tasks/phase-N/`, `.arsenal/tasks/parallel/`, `.arsenal/tasks/archive/` | Per-task briefs + ephemera. Gitignored. Phase-N gated per active phase. |
+| `.arsenal/{ARCHITECTURE,CONVENTIONS,TASKS}.md` | Project anchor docs. `TASKS.md` is the single task ledger. Always readable during build. |
+| `.arsenal/design/{UX,DESIGN,DESIGN_SYSTEM}.md` + `.arsenal/design/mockups/` | Design reference set and actual mockups. Always readable during build. |
 
-**File names are not configurable.** The artifact contract depends on canonical names; only the wrapping directory can be reconfigured via `.arsenal/config.yaml` if absolutely needed (rare).
+## Build-time access
 
-## Gating
-
-When the first `arsenal-build:expand-phase` runs, it writes baseline denies to `.claude/settings.json`:
-- `Read(.arsenal/strategy/**)` — strategy stays denied throughout build
-- Out-of-scope `.arsenal/features/<slug>.md` per phase — only the in-scope features for the current phase are readable
-- Out-of-scope `.arsenal/tasks/phase-*/**` — only the current phase's task folder is readable
-
-`close-feature-phase` reverts the per-phase entries at phase end, leaving the broad baseline in place. Strategy stays denied until the user manually unlocks (or invokes `gtm` / `landing` / `setup`, which self-lift the strategy deny temporarily).
-
-This means: **once build kicks off, the strategy archive becomes dormant to build agents.** Planning iteration (re-running `mvp`, `features`, `ux-*`, `design`, etc.) requires either pre-build state or manual unlock. Tells the user to remove `.arsenal/`-prefixed entries from `.claude/settings.json` if they need to revisit planning mid-build.
+During build execution, `.arsenal/strategy/` is protected and out-of-scope split feature specs should remain unread unless the active phase cites them. The build orchestrator reads the active feature specs, the design reference set, and the single `.arsenal/TASKS.md` ledger. Host-specific permission rules may enforce those boundaries, but the artifact structure does not depend on a particular provider or settings-file format.
 
 ## Skill details
 
@@ -123,7 +110,7 @@ Produces an **executive-grade unified research dossier** that a CEO or decision-
 
 1. **Intake.** Open conversation to understand what to research. Captures project intent (hobby / freelance / startup / venture / strategist evaluating an opportunity) — drives the format recommendation at Step 4d.
 2. **Discovery sweep + checkpoint.** Quick baseline web search, then a checkpoint where the user can flag threads to pursue or skip.
-3. **Deep research dispatch.** 2–5 parallel investigations via `dispatch-parallel` covering market sizing (bottom-up TAM/SAM/SOM), customer JTBD, pricing benchmarks, demand signals, and per-competitor deep analysis. Uses Jina MCP / Firecrawl / WebSearch. Every claim tier-graded (T1–T4) and cited with URL + confidence.
+3. **Deep research.** Runs 2–5 bounded investigations covering market sizing (bottom-up TAM/SAM/SOM), customer JTBD, pricing benchmarks, demand signals, and per-competitor deep analysis. Uses fresh-context workers in parallel when the host supports them and an equivalent sequential inline fallback otherwise. Every claim is tier-graded (T1–T4) and cited with URL + confidence.
 4. **Industry structure.** Porter's all 5 forces, relevance-weighted by product type (AI products focus on Supplier Power; enterprise SaaS focuses on Buyer Power). Conditional PESTLE for regulated industries (fintech, healthtech, etc.).
 5. **Direction check + SWOT + format decision.** Synthesize highest-signal threads, ask if the user wants to reshape any conclusions, then SWOT into the dossier and pick an output format (Brief / Standard / Comprehensive) with an intent-based recommendation.
 6. **Final dossier.** Writes `.arsenal/strategy/research/MARKET_RESEARCH.md` with §7 Strategic Implications + Appendix (methodology, tier-graded source list, sizing math, optional per-claim confidence summary).
@@ -165,7 +152,7 @@ Drills an idea into a focused **MVP spec** — what to build first, why, with su
 4. **Write the spec.** `.arsenal/strategy/MVP_SPEC.md` with Must / Should / Won't feature buckets, user stories, core value loop, success metrics, distribution hypothesis, phased roadmap.
 5. **Review & recommendation.** Go / pivot / kill in conversation, with reasoning grounded in research if present, in intake judgment otherwise (and flagged accordingly).
 
-**Surface-level tech decisions are in scope** — web vs iOS, mobile vs desktop, marketing site vs authenticated webapp — those shape the spec and feed downstream skills. Stack-specific decisions (framework, database, hosting) defer to `arsenal-build:setup`.
+**Surface-level tech decisions are in scope** — web vs iOS, mobile vs desktop, marketing site vs authenticated webapp — those shape the spec and feed downstream skills. Stack-specific decisions (framework, database, hosting) defer to arsenal-build's first-run setup.
 
 **How to use it**
 
@@ -189,7 +176,7 @@ Drills each feature in a list into a spec an engineer or coding agent can implem
 4. **Write.** One spec per feature.
 5. **Reconcile.** Updates `MVP_SPEC.md` if drilling reshuffled Must/Should/Won't.
 
-Split-file mode is built to pair with the v0.2 gating model in downstream build plugins: `Read(.arsenal/features/**)` baseline-denies all feature specs, and `arsenal-build:expand-phase` mutates the deny list per phase to grant access only to the in-scope features. With a single combined `FEATURES.md`, this granular per-feature gating isn't possible — deny is all-or-nothing.
+Split-file mode lets the build orchestrator cite and load only the feature specs relevant to the active phase, keeping task expansion focused while preserving stable canonical paths.
 
 **How to use it**
 
@@ -285,45 +272,6 @@ Produces a `DESIGN.md` in the **[Google DESIGN.md format](https://github.com/goo
 
 ---
 
-### `mockups` — two-pass mockup briefs for design tools
-
-Generates copy-paste-ready mockup briefs in `.arsenal/strategy/mockup-briefs/` engineered for Claude Design, Stitch, Open Design, or v0. Applies a **two-pass anchor strategy**: lock the visual language with one or two anchor screens first, then derive every other screen against the locked anchor.
-
-The skill writes briefs only — it does not generate mockups itself. The user feeds each brief into their tool of choice and saves the output to `.arsenal/design/mockups/`. A future `generate-mockups` skill (planned around `nexu-io/open-design`, will live in arsenal-build) will consume these same briefs automatically.
-
-**Why two passes**
-
-Most teams generate inconsistent mockups by going straight to per-feature screens. The mockup tool has to re-derive the visual language each time. The anchor strategy fixes this by separating the "lock the look" decision from the "place this screen's content" decision.
-
-| Pass | Goal | Iterations expected |
-|---|---|---|
-| **1 — Anchor** | Establish the visual language (typography hierarchy, spacing rhythm, color application, navigation shape) | 5–15 |
-| **2 — Derived** | Place per-screen content into the locked language | 1–3 per screen |
-| **3 — States** | Variants for empty / loading / error / first-run | 1 per state |
-
-Pass 1 is the highest-leverage prompt in the project. Pass 2 is mostly mechanical once Pass 1 is right.
-
-**How it works**
-
-1. **Verify preconditions.** Hard-requires `.arsenal/FEATURES.md` (or split features), `.arsenal/design/UX.md`, `.arsenal/design/DESIGN.md`. Missing → routes to the right arsenal-planning skill.
-2. **Classify surface + select anchor(s).** Marketing site → homepage. Web app → dashboard. Native iOS → home/today + onboarding step 1 (two anchors — iOS has two visual languages).
-3. **Generate Pass 1 brief(s).** Full DESIGN.md + UX.md anchor section, no feature content yet. Skill stops and prompts the user to feed the brief into their tool, save the anchor mockup to `.arsenal/design/mockups/`, return.
-4. **Generate Pass 2 briefs (after Pass 1 locked).** Per high-stakes screen — references the anchor as visual reference, pulls relevant feature spec visual sections (User Flow, States, Important, Data — skips Acceptance Criteria and Dependencies).
-5. **Generate Pass 3 briefs (optional).** State variants for screens with meaningful state coverage in FEATURES § States.
-6. **Index + handoff.** Writes `.arsenal/strategy/mockup-briefs/README.md` with workflow order and status tracking.
-
-**Tool-specific guidance** ships in `references/worked-examples.md` — same Pass 1 brief shown three ways (Claude Design / Stitch / Open Design), plus tool quickstart matrix, Pass 2 + Pass 3 worked examples, and common iteration patterns when output drifts.
-
-**How to use it**
-
-- **Slash command:** `/arsenal-planning:mockups`
-- **Or trigger with:** "generate mockup briefs", "prepare mockups", "draft mockup prompts", "script mockups", "I need mockups for this product"
-
-- **Inputs (hard-required):** `.arsenal/FEATURES.md` or `.arsenal/features/`, `.arsenal/design/UX.md`, `.arsenal/design/DESIGN.md`.
-- **Outputs:** `.arsenal/strategy/mockup-briefs/README.md` (index) + `.arsenal/strategy/mockup-briefs/01-anchor-<screen>.md` (Pass 1) + `.arsenal/strategy/mockup-briefs/02-<screen>.md` (Pass 2) + `.arsenal/strategy/mockup-briefs/03-<screen>-<state>.md` (Pass 3, optional).
-
----
-
 ### `gtm` — go-to-market and growth plan
 
 Picks up after the MVP is built (or nearly built) and produces a research-backed launch plan — positioning, channels, pricing validation, revenue modeling, marketing budget, week-by-week launch timeline, and a KPI dashboard with **decision triggers** so the operator doesn't think from scratch every month.
@@ -352,30 +300,6 @@ A 7-step (0–6) workflow with its own Lean / Moderate / Deep depth tiers. (Note
 
 ---
 
-### `dispatch-parallel` — fan out independent investigations
-
-A utility skill, **off the linear pipeline**. Dispatches 2–5 read-only investigations to parallel investigator subagents and reconciles their results into a single `SUMMARY.md` with cross-investigation overlap detection and severity-tagged recommendations. Use for audits, market research fan-outs, debug sessions, code analysis — any case where the work is genuinely disjoint and parallelization actually pays for itself.
-
-Lives in arsenal-planning because `market-analysis` depends on it. Equally useful in build contexts when arsenal-build is also installed — the skill is read-only and stack-agnostic.
-
-**The independence gate is the whole skill.** Before any dispatch, it checks three criteria — disjoint scope, no shared mutations, result-independence — and refuses to fan out if they don't hold. Failing the gate is the success case for dependent work; the skill recommends sequential execution.
-
-**Does NOT compose with code-changing pipelines.** Investigations are read-only by design — investigator subagents have zero write capability. When findings recommend code changes, the SUMMARY's "Next steps" block points the user at the per-task pipelines (`arsenal-build:run-task-{design,feature}` for sequential, one-fix-at-a-time work) or the orchestrators (`arsenal-build:features` for pattern-spanning work as a TASKS.md phase). The two plugins connect through filesystem and user judgment, not direct invocation.
-
-**Locked contracts:**
-- **Count bounds:** N = 1 refuses with suggestion; 2 ≤ N ≤ 5 normal; N ≥ 6 hard-refuses (recommend phase modeling).
-- **Idempotence:** default skip per-investigation if `investigation-{N}-result.md` exists; `--force` regenerates.
-- **Conflict handling:** when investigations contradict each other, SUMMARY flags conflicts in a `## Conflicts requiring user resolution` section and the skill exits cleanly.
-- **Investigator tools:** broad read (Read / Glob / Grep / read-only Bash / WebSearch / Firecrawl / claude-in-chrome), zero write.
-
-**How to use it**
-
-- **Slash command:** `/arsenal-planning:dispatch-parallel`
-- **Or trigger with:** "investigate these in parallel", "fan out on these issues", "run these checks concurrently", "audit X, Y, and Z separately"
-
-- **Inputs:** 2–5 investigation descriptions via `--investigation` (repeated) or `--from-file <path>`, optional `--surface web|ios` for codebase context, optional `--force`, optional `--max <N>` (capped at 5).
-- **Outputs (`.arsenal/tasks/parallel/<run-id>/`):** `investigation-N-result.md` per investigation (≤3k tokens), `SUMMARY.md` (aggregated with overlap detection + conflict flags + next-step recommendations).
-
 ## File layout
 
 The plugin source layout (skills, manifest):
@@ -402,19 +326,13 @@ arsenal-planning/
 │   ├── 05-design/
 │   │   ├── SKILL.md                      # name: design
 │   │   └── references/{template,example-claude,...}.md
-│   ├── 06-mockups/
-│   │   ├── SKILL.md                      # name: mockups
-│   │   └── references/worked-examples.md
-│   ├── 07-gtm/SKILL.md                   # name: gtm
-│   └── dispatch-parallel/                # off-pipeline utility (no number prefix)
-│       ├── SKILL.md                      # name: dispatch-parallel
-│       └── references/investigator-prompt.md
+│   └── 06-gtm/SKILL.md                   # name: gtm
 ├── PIPELINE.md
 ├── LICENSE
 └── README.md
 ```
 
-`SKILL.md` is the contract — frontmatter (`name`, `description`) plus body. Claude reads `description` to decide when to auto-invoke; the body is what actually runs. **Folder names carry numeric prefixes (`01-`, `02-`, `04a-`) only for human readability — pipeline skills are numbered by execution order, utility skills (`dispatch-parallel`) sit unnumbered. Claude Code uses the frontmatter `name:` to register the skill, so slash commands stay clean (e.g. `/arsenal-planning:mvp`, not `/arsenal-planning:02-mvp`).**
+`SKILL.md` is the contract — frontmatter (`name`, `description`) plus body. Claude reads `description` to decide when to auto-invoke; the body is what actually runs. Folder names carry numeric prefixes for human-readable pipeline order. Claude Code uses the frontmatter `name:` to register the skill, so slash commands stay clean (for example, `/arsenal-planning:mvp`, not `/arsenal-planning:02-mvp`).
 
 The artifact layout that arsenal-planning writes into a *consuming project*:
 
@@ -422,7 +340,6 @@ The artifact layout that arsenal-planning writes into a *consuming project*:
 project-root/
 ├── CLAUDE.md                              ← stays at root
 └── .arsenal/
-    ├── config.yaml                        ← optional path override
     ├── ARCHITECTURE.md                    ← project anchor (written by arsenal-build)
     ├── CONVENTIONS.md                     ← project anchor (written by arsenal-build)
     ├── TASKS.md                           ← project anchor (written by arsenal-build)
@@ -434,16 +351,12 @@ project-root/
     │   ├── UX.md                          ← ux-web / ux-app / ux-ios
     │   ├── DESIGN.md                      ← design
     │   ├── DESIGN_SYSTEM.md               ← written by arsenal-build
-    │   └── mockups/                       ← user-generated from mockup briefs
-    ├── tasks/                             ← per-task briefs + ephemera (gitignored)
-    │   ├── phase-N/
-    │   ├── parallel/                      ← dispatch-parallel working dir
-    │   └── archive/
+    │   └── mockups/                       ← actual mockup source or rendered files
     └── strategy/                          ← user archive; DENIED during build
-        ├── MARKET_RESEARCH.md             ← market-analysis
-        ├── RESEARCH_PLAN.md               ← market-analysis (working artifact)
+        ├── research/
+        │   ├── MARKET_RESEARCH.md         ← market-analysis
+        │   └── RESEARCH_PLAN.md           ← market-analysis working artifact
         ├── MVP_SPEC.md                    ← mvp
-        ├── mockup-briefs/                 ← mockups
         ├── GTM_STRATEGY.md                ← gtm
         └── REVENUE_MODEL.md               ← gtm
 ```
